@@ -37,9 +37,9 @@ namespace Zuri_Portfolio_Explore.Utilities
 
                 var skillfaker = new Faker<SkillsDetail>()
                     .RuleFor(u => u.UserId, f => f.Random.Guid())
-                    .RuleFor(u => u.Skills, f => f.Name.FirstName())
+                    .RuleFor(u => u.Skills, f => f.Name.FirstName());
                    // .RuleFor(u => u.SectionId, f => f.Name.FirstName())
-                    .RuleFor(u => u.User, f => userfaker.Generate());
+                    //.RuleFor(u => u.User, f => userfaker.Generate());
                 var skills = skillfaker.Generate(5);
                 context.SkillsDetails.AddRange(skills);
                 context.SaveChanges();
