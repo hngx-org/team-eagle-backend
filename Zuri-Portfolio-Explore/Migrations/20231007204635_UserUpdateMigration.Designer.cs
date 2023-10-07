@@ -12,8 +12,8 @@ using Zuri_Portfolio_Explore.Data;
 namespace Zuri_Portfolio_Explore.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231007195506_UserUpdate")]
-    partial class UserUpdate
+    [Migration("20231007204635_UserUpdateMigration")]
+    partial class UserUpdateMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -74,6 +74,34 @@ namespace Zuri_Portfolio_Explore.Migrations
                     b.ToTable("Projects");
                 });
 
+            modelBuilder.Entity("Zuri_Portfolio_Explore.Domains.Models.Section", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Meta")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("meta");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Sections");
+                });
+
             modelBuilder.Entity("Zuri_Portfolio_Explore.Domains.Models.SkillsDetail", b =>
                 {
                     b.Property<int>("Id")
@@ -96,6 +124,8 @@ namespace Zuri_Portfolio_Explore.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SectionId");
 
                     b.HasIndex("UserId");
 
@@ -142,6 +172,10 @@ namespace Zuri_Portfolio_Explore.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SocialMediaId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("SocialUsers");
                 });
@@ -236,11 +270,38 @@ namespace Zuri_Portfolio_Explore.Migrations
 
             modelBuilder.Entity("Zuri_Portfolio_Explore.Domains.Models.SkillsDetail", b =>
                 {
+                    b.HasOne("Zuri_Portfolio_Explore.Domains.Models.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Zuri_Portfolio_Explore.Domains.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Section");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Zuri_Portfolio_Explore.Domains.Models.SocialUser", b =>
+                {
+                    b.HasOne("Zuri_Portfolio_Explore.Domains.Models.SocialMedia", "SocialMedia")
+                        .WithMany()
+                        .HasForeignKey("SocialMediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Zuri_Portfolio_Explore.Domains.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SocialMedia");
 
                     b.Navigation("User");
                 });

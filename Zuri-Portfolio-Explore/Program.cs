@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Zuri_Portfolio_Explore.Data;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 using Zuri_Portfolio_Explore.Repository.Services;
+using Zuri_Portfolio_Explore.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +33,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dataContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     dataContext.Database.Migrate();
-    //SeedDB.Initialize(dataContext);
+    SeedDB.Initialize(dataContext);
 }
 
 app.UseHttpsRedirection();
