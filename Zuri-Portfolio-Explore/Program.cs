@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Zuri_Portfolio_Explore.Data;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
+using Zuri_Portfolio_Explore.Repository.Services;
+using Zuri_Portfolio_Explore.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +17,7 @@ var connectionString = builder.Configuration.GetConnectionString("DevelopmentCon
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 options.UseNpgsql(connectionString));
-builder.Services.AddScoped<IPortfolioService, IPortfolioService>();
+builder.Services.AddScoped<IPortfolioService, PortfolioService>();
 
 var app = builder.Build();
 
@@ -31,6 +33,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dataContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     dataContext.Database.Migrate();
+    SeedDB.Initialize(dataContext);
 }
 
 app.UseHttpsRedirection();
