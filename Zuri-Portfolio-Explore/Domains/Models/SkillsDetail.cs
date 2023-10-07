@@ -21,5 +21,6 @@ namespace Zuri_Portfolio_Explore.Domains.Models
         [Required(ErrorMessage = "Section ID is required")]
         [Column("section_id")] // Maps to the "section_id" column in the database
         public int SectionId { get; set; }
+        public Section? Section { get; set; }
     }
 }
