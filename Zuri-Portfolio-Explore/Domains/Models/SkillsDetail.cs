@@ -16,6 +16,7 @@ namespace Zuri_Portfolio_Explore.Domains.Models
         [Required(ErrorMessage = "User ID is required")]
         [Column("user_id")] // Maps to the "user_id" column in the database
         public Guid UserId { get; set; }
+        public User User { get; set; }
 
         [Required(ErrorMessage = "Section ID is required")]
         [Column("section_id")] // Maps to the "section_id" column in the database

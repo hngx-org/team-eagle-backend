@@ -46,6 +46,6 @@ namespace Zuri_Portfolio_Explore.Domains.Models
         public string RefreshToken { get; set; }
 
         [Column("created_at")] // Maps to the "created_at" column in the database
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }
