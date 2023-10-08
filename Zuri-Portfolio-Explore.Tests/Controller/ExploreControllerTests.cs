@@ -62,7 +62,7 @@ namespace Zuri_Portfolio_Explore.Tests.Controller
             var controller = new ExploreController(fPortfolioService);
 
             //Act
-            var result = await controller.GetAllPortfolioBySearchTerm(searchTerm);
+            var result = await controller.GetPortfoliosBySearchTerm(searchTerm);
 
             //Assert
             result.Should().NotBeNull().And.BeOfType<OkObjectResult>();
