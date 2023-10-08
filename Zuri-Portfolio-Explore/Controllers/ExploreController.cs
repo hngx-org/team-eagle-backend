@@ -20,9 +20,20 @@ namespace Zuri_Portfolio_Explore.Controllers
         ///</summary>
         ///<returns> Returns a list of user's Portfolio </returns>
         [HttpGet("GetAllPortfolio")]
-        public async Task<IActionResult> GetAllPortfolio()
+        public async Task<IActionResult> GetAllPortfolio(int page = 1, int itemsPerPage = 12)
         {
-            return Ok(await _portfolioService.GetAllPortfolios());
+            var response = await _portfolioService.GetAllPortfolios();
+
+            if(response.Data == null)
+            {
+                return Ok(response);
+            }
+
+            var portfolioResponse = response.Data
+                .Skip((page - 1) * itemsPerPage)
+                .Take(itemsPerPage);                
+
+            return Ok(portfolioResponse);
         }
 
         ///<summary>

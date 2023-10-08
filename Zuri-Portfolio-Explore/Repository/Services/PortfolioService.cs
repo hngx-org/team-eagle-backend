@@ -35,7 +35,9 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                         ProfileUrl = item.ProfilePicture,
                         FirstName = item.FirstName,
                         LastName = item.LastName,
-                        Address = string.Concat(item.Location, ", ", item.Country),
+                        Address = item.Location == string.Empty && item.Country == string.Empty 
+                            ? " " 
+                            : string.Concat(item.Location, ", ", item.Country),
                         Provider = item.Provider,
                         Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
                         Projects = item.Projects.Select(m => m.Id).ToList().Count //Gets user total project
