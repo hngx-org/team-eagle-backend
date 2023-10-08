@@ -31,7 +31,7 @@ namespace Zuri_Portfolio_Explore.Controllers
         /// <param name="searchTerm">The parameter to search with</param>
         ///<returns> Returns a list of user's Portfolio based on the search term </returns>
         [HttpGet("search/{searchTerm}")]
-        public async Task<IActionResult> GetAllPortfolioBySearchTerm(string searchTerm)
+        public async Task<IActionResult> GetPortfoliosBySearchTerm(string searchTerm)
         {
             return Ok(await _portfolioService.GetPortfoliosBySearchTerm(searchTerm));
         }
