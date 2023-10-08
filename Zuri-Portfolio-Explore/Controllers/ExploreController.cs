@@ -14,12 +14,22 @@ namespace Zuri_Portfolio_Explore.Controllers
         {
             _portfolioService = portfolioService;
         }
+
+        ///<summary>
+        /// Get all User's Portfolio 
+        ///</summary>
+        ///<returns> Returns a list of user's Portfolio </returns>
         [HttpGet("GetAllPortfolio")]
         public async Task<IActionResult> GetAllPortfolio()
         {
             return Ok(await _portfolioService.GetAllPortfolios());
         }
 
+        ///<summary>
+        /// Searching through User's Portfolio 
+        ///</summary>
+        /// <param name="searchTerm">The parameter to search with</param>
+        ///<returns> Returns a list of user's Portfolio based on the search term </returns>
         [HttpGet("search/{searchTerm}")]
         public async Task<IActionResult> GetAllPortfolioBySearchTerm(string searchTerm)
         {

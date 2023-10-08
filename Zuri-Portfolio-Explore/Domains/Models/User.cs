@@ -12,7 +12,12 @@ namespace Zuri_Portfolio_Explore.Domains.Models
         [Required(ErrorMessage = "Username is required")]
         [StringLength(255)]
         public string Username { get; set; }
-
+        [Required(ErrorMessage = "Country is required")]
+        [StringLength(255)]
+        public string Country { get; set; }
+        [Required(ErrorMessage = "Location is required")]
+        [StringLength(255)]
+        public string Location { get; set; }
         [Required(ErrorMessage = "First Name is required")]
         [StringLength(255)]
         [Column("first_name")] // Maps to the "first_name" column in the database
