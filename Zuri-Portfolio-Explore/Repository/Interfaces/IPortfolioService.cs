@@ -1,4 +1,6 @@
-﻿using Zuri_Portfolio_Explore.Domains.DTOs.Response;
+﻿using Zuri_Portfolio_Explore.Domains.DTOs;
+using Zuri_Portfolio_Explore.Domains.DTOs.Request;
+using Zuri_Portfolio_Explore.Domains.DTOs.Response;
 
 namespace Zuri_Portfolio_Explore.Repository.Interfaces
 {

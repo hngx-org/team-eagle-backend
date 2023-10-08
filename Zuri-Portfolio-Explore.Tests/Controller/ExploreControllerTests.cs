@@ -44,5 +44,19 @@ namespace Zuri_Portfolio_Explore.Tests.Controller
             //Assertions
             result.Should().NotBeNull().And.BeOfType<OkObjectResult>();  
         }
+
+        [Fact]
+        public async void Explore_SearchPortfolio_ReturnOk()
+        {
+            //Arrange
+            //var fPortfolioService = A.Fake<IPortfolioService>();
+            //var fPortfolios = A.Fake<List<PortfolioResponse>>();
+
+
+
+            //Act
+
+            //Assert
+        }
     }
 }
