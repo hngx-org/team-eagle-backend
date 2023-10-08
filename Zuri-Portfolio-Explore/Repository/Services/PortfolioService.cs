@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Zuri_Portfolio_Explore.Data;
-using Zuri_Portfolio_Explore.Domains.DTOs;
+using Zuri_Portfolio_Explore.Domains.DTOs.Request;
 using Zuri_Portfolio_Explore.Domains.DTOs.Response;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 
@@ -23,7 +23,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
 
                 var users = await _context.Users.Include(u => u.SkillDetails).Include(u => u.Projects).ToListAsync();
 
-                if(users.Count == 0)
+                if(users.Count() == 0)
                 {
                     return ApiResponse<List<PortfolioResponse>>.Success("No items to be retrieved", portfolioResponses);
                 }
@@ -50,18 +50,6 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 Console.WriteLine(ex.Message);
                 return ApiResponse<List<PortfolioResponse>>.Fail("Failed to retrieve items", 500);
             }
-        }
-
-        public async Task<List<PortfolioDTO>> GetPortfolios()
-        {
-            var users = await _context.Users.ToListAsync();
-            var portfolios = users.Select(x => new PortfolioDTO()
-            {
-                Name = x.FirstName + " " + x.LastName,
-                Provider = x.Provider
-
-            }).ToList();
-            return portfolios;
         }
     }
 }
