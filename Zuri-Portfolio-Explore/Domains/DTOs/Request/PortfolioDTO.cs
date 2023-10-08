@@ -1,4 +1,4 @@
-﻿namespace Zuri_Portfolio_Explore.Domains.DTOs
+﻿namespace Zuri_Portfolio_Explore.Domains.DTOs.Request
 {
     public class PortfolioDTO
     {
