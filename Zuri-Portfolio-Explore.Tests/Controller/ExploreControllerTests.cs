@@ -26,11 +26,11 @@ namespace Zuri_Portfolio_Explore.Tests.Controller
         {
             //Arrange
             var fPortfolioService = A.Fake<IPortfolioService>();
-            var fPortfolios = A.Fake<List<PortfolioResponse>>();
+            var expectedResult = A.Fake<List<PortfolioResponse>>();
 
             A.CallTo(() => fPortfolioService.GetAllPortfolios()).Returns(Task.FromResult(new ApiResponse<List<PortfolioResponse>>
             {
-                 Data = fPortfolios,
+                 Data = expectedResult,
                  IsSuccessful = true,
                  Message = "OK",
                  StatusCode = 200
@@ -42,7 +42,39 @@ namespace Zuri_Portfolio_Explore.Tests.Controller
             var result = await controller.GetAllPortfolio();
 
             //Assertions
-            result.Should().NotBeNull().And.BeOfType<OkObjectResult>();  
+            result.Should().NotBeNull().And.BeOfType<OkObjectResult>();
+            var resultObject = result as OkObjectResult;
+            resultObject?.StatusCode.Should().Be(200);
+        }
+
+        [Fact]
+        public async Task Explore_SearchPortfolio_ReturnOk()
+        {
+            //Arrange
+            var fPortfolioService = A.Fake<IPortfolioService>();
+            var expectedResult = A.Fake<List<PortfolioResponse>>();
+            var expectedAPIResult = new ApiResponse<List<PortfolioResponse>>()
+            {
+                Data = expectedResult,
+                IsSuccessful = true,
+                Message = "OK",
+                StatusCode = 200
+            };
+            var searchTerm = "example";
+
+            A.CallTo(() => fPortfolioService.GetPortfoliosBySearchTerm(searchTerm)).Returns(Task.FromResult(expectedAPIResult));
+
+            var controller = new ExploreController(fPortfolioService);
+
+            //Act
+            var result = await controller.GetAllPortfolioBySearchTerm(searchTerm);
+
+            //Assert
+            result.Should().NotBeNull().And.BeOfType<OkObjectResult>();
+
+            var resultObject = result as OkObjectResult;
+            resultObject?.Value.Should().BeEquivalentTo(expectedAPIResult);
+            resultObject?.StatusCode.Should().Be(200);   
         }
     }
 }
