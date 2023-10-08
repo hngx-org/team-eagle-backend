@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Zuri_Portfolio_Explore.Domains.Models
 {
@@ -12,7 +12,12 @@ namespace Zuri_Portfolio_Explore.Domains.Models
         [Required(ErrorMessage = "Username is required")]
         [StringLength(255)]
         public string Username { get; set; }
-
+        [Required(ErrorMessage = "Country is required")]
+        [StringLength(255)]
+        public string Country { get; set; }
+        [Required(ErrorMessage = "Location is required")]
+        [StringLength(255)]
+        public string Location { get; set; }
         [Required(ErrorMessage = "First Name is required")]
         [StringLength(255)]
         [Column("first_name")] // Maps to the "first_name" column in the database
@@ -48,7 +53,8 @@ namespace Zuri_Portfolio_Explore.Domains.Models
         [Column("created_at")] // Maps to the "created_at" column in the database
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public List<SkillsDetail> SkillDetails {get; set;}
-        public List<Project> Projects {get; set;}
+        public List<SkillsDetail> SkillDetails { get; set; }
+        public List<Project> Projects { get; set; }
+        public UserRoles UserRoles { get; set; }
     }
 }

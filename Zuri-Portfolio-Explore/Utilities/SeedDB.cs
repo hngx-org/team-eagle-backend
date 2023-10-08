@@ -10,6 +10,7 @@ namespace Zuri_Portfolio_Explore.Utilities
         {
             if (!context.Users.Any())
             {
+                   
                 var socialfaker = new Faker<SocialMedia>().
                    RuleFor(u => u.Name, f => f.Name.LastName());
 
@@ -22,6 +23,8 @@ namespace Zuri_Portfolio_Explore.Utilities
                     .RuleFor(u => u.ProfilePicture, f => f.Name.FirstName())
                     .RuleFor(u => u.Password, f => f.Name.FirstName())
                     .RuleFor(u => u.RefreshToken, f => f.Name.FirstName())
+                    .RuleFor(u => u.Location, f => f.Address.City())
+                    .RuleFor(u => u.Location, f => f.Address.Country())
                     .RuleFor(u => u.Email, (f, u) => f.Internet.Email(u.FirstName))
                     ;
 
@@ -44,10 +47,21 @@ namespace Zuri_Portfolio_Explore.Utilities
                     .RuleFor(u => u.UserId, f => f.Random.Guid())
                     .RuleFor(u => u.User, f => userfaker.Generate());
 
+                var rolefaker = new Faker<Role>()
+                    .RuleFor(u => u.Name, f => f.Name.Suffix());
+
+                var userRolesFaker = new Faker<UserRoles>()
+                    .RuleFor(u => u.RoleId, f => f.Random.Number(1, 5))
+                    .RuleFor(u => u.UserId, f => f.Random.Guid())
+                    .RuleFor(u => u.User, f => userfaker.Generate())
+                    .RuleFor(u => u.Role, f => rolefaker.Generate());
+
                 var skills = skillfaker.Generate(5);
+                var userRoles = userRolesFaker.Generate(5);
                 var socialUsersFakers = socialUsersFaker.Generate(5);
                 context.SkillsDetails.AddRange(skills);
                 context.SocialUsers.AddRange(socialUsersFakers);
+                context.UserRoles.AddRange(userRoles);
                 context.SaveChanges();
             }
         }
