@@ -42,7 +42,7 @@ namespace Zuri_Portfolio_Explore.Tests.Controller
 
         [Theory]
         [InlineData("Jr")]
-        public async void Explore_SearchPortfolio_ReturnOk(string searchTerm)
+        public async void Explore_SearchPortfolioByRole_ReturnOk(string searchTerm)
         {
             //Arrange
             var fPortfolioService = A.Fake<IPortfolioService>();
