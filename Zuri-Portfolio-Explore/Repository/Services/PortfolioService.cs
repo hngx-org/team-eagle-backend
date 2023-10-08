@@ -55,43 +55,33 @@ namespace Zuri_Portfolio_Explore.Repository.Services
 
         public async Task<ApiResponse<List<PortfolioResponse>>> GetPortfoliosBySearchTerm(string searchTerm)
         {
-            List<PortfolioResponse> portfolioResponses = new();
             try
             {
 
                 // Retrieve user items from DB
                 searchTerm = searchTerm.ToLower();
-                var users = await _context.Users
+                var portfolioResponses = await _context.Users
                     .Include(u => u.SkillDetails)
                     .Include(u => u.Projects)
                     .Include(u => u.UserRoles)
                     .ThenInclude(x => x.Role)
                     .Where(x => x.FirstName.ToLower().Contains(searchTerm) || x.LastName.ToLower().Contains(searchTerm)
                     || x.Username.ToLower().Contains(searchTerm) || x.UserRoles.Role.Name.ToLower().Contains(searchTerm))
+                    .Select(x => new PortfolioResponse()
+                    {
+                        FirstName = x.FirstName,
+                        LastName = x.LastName,
+                        Provider = x.Provider,
+                        Skills = x.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
+                        Projects = x.Projects.Select(m => m.Id).ToList().Count //Gets user total project
+                    })
                     .ToListAsync();
 
-                if (users.Count() == 0)
+                if (portfolioResponses.Count() == 0)
                 {
                     return ApiResponse<List<PortfolioResponse>>.Success("No items to be retrieved", portfolioResponses);
                 }
-
-                foreach (var item in users)
-                {
-                    var portfolioResponse = new PortfolioResponse()
-                    {
-                        FirstName = item.FirstName,
-                        LastName = item.LastName,
-                        Provider = item.Provider,
-                        Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
-                        Projects = item.Projects.Select(m => m.Id).ToList().Count //Gets user total project
-                    };
-
-                    portfolioResponses.Add(portfolioResponse);
-                }
-
                 return ApiResponse<List<PortfolioResponse>>.Success("Items retireved successfully", portfolioResponses);
-
-
             }
             catch (Exception ex)
             {
