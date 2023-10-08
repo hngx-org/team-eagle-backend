@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Zuri_Portfolio_Explore.Domains.Models
 {
@@ -48,7 +48,8 @@ namespace Zuri_Portfolio_Explore.Domains.Models
         [Column("created_at")] // Maps to the "created_at" column in the database
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public List<SkillsDetail> SkillDetails {get; set;}
-        public List<Project> Projects {get; set;}
+        public List<SkillsDetail> SkillDetails { get; set; }
+        public List<Project> Projects { get; set; }
+        public UserRoles UserRoles { get; set; }
     }
 }

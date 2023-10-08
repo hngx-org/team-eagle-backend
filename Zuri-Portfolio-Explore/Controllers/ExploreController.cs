@@ -21,7 +21,7 @@ namespace Zuri_Portfolio_Explore.Controllers
         }
 
         [HttpGet("search/{searchTerm}")]
-        public async Task<IActionResult> GetAllPortfolioBySearchTerm(string searchTerm)
+        public async Task<IActionResult> GetPortfoliosBySearchTerm(string searchTerm)
         {
             return Ok(await _portfolioService.GetPortfoliosBySearchTerm(searchTerm));
         }

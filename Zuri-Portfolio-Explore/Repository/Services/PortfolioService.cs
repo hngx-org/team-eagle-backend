@@ -64,8 +64,10 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 var users = await _context.Users
                     .Include(u => u.SkillDetails)
                     .Include(u => u.Projects)
+                    .Include(u => u.UserRoles)
+                    .ThenInclude(x => x.Role)
                     .Where(x => x.FirstName.ToLower().Contains(searchTerm) || x.LastName.ToLower().Contains(searchTerm)
-                    || x.Username.ToLower().Contains(searchTerm))
+                    || x.Username.ToLower().Contains(searchTerm) || x.UserRoles.Role.Name.ToLower().Contains(searchTerm))
                     .ToListAsync();
 
                 if (users.Count() == 0)
