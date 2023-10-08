@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 
-namespace Zuri_Portfolio_Explore.Controllers{
+namespace Zuri_Portfolio_Explore.Controllers
+{
     [ApiController]
-    [Route("api/[Controller]")]
+    [Route("api/explore")]
     public class ExploreController : ControllerBase
     {
 
@@ -17,6 +18,12 @@ namespace Zuri_Portfolio_Explore.Controllers{
         public async Task<IActionResult> GetAllPortfolio()
         {
             return Ok(await _portfolioService.GetAllPortfolios());
-        }              
+        }
+
+        [HttpGet("search/{searchTerm}")]
+        public async Task<IActionResult> GetAllPortfolioBySearchTerm(string searchTerm)
+        {
+            return Ok(await _portfolioService.GetPortfoliosBySearchTerm(searchTerm));
+        }
     }
 }

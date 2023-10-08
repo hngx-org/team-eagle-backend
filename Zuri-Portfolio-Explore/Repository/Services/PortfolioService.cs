@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Zuri_Portfolio_Explore.Data;
-using Zuri_Portfolio_Explore.Domains.DTOs.Request;
 using Zuri_Portfolio_Explore.Domains.DTOs.Response;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 
@@ -17,18 +16,19 @@ namespace Zuri_Portfolio_Explore.Repository.Services
         public async Task<ApiResponse<List<PortfolioResponse>>> GetAllPortfolios()
         {
             List<PortfolioResponse> portfolioResponses = new();
-            try{
+            try
+            {
 
                 // Retrieve user items from DB
 
                 var users = await _context.Users.Include(u => u.SkillDetails).Include(u => u.Projects).ToListAsync();
 
-                if(users.Count() == 0)
+                if (users.Count() == 0)
                 {
                     return ApiResponse<List<PortfolioResponse>>.Success("No items to be retrieved", portfolioResponses);
                 }
-                
-                foreach(var item in users)
+
+                foreach (var item in users)
                 {
                     var portfolioResponse = new PortfolioResponse()
                     {
@@ -44,8 +44,54 @@ namespace Zuri_Portfolio_Explore.Repository.Services
 
                 return ApiResponse<List<PortfolioResponse>>.Success("Items retireved successfully", portfolioResponses);
 
-                
-            }catch(Exception ex)
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return ApiResponse<List<PortfolioResponse>>.Fail("Failed to retrieve items", 500);
+            }
+        }
+
+        public async Task<ApiResponse<List<PortfolioResponse>>> GetPortfoliosBySearchTerm(string searchTerm)
+        {
+            List<PortfolioResponse> portfolioResponses = new();
+            try
+            {
+
+                // Retrieve user items from DB
+                searchTerm = searchTerm.ToLower();
+                var users = await _context.Users
+                    .Include(u => u.SkillDetails)
+                    .Include(u => u.Projects)
+                    .Where(x => x.FirstName.ToLower().Contains(searchTerm) || x.LastName.ToLower().Contains(searchTerm)
+                    || x.Username.ToLower().Contains(searchTerm))
+                    .ToListAsync();
+
+                if (users.Count() == 0)
+                {
+                    return ApiResponse<List<PortfolioResponse>>.Success("No items to be retrieved", portfolioResponses);
+                }
+
+                foreach (var item in users)
+                {
+                    var portfolioResponse = new PortfolioResponse()
+                    {
+                        FirstName = item.FirstName,
+                        LastName = item.LastName,
+                        Provider = item.Provider,
+                        Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
+                        Projects = item.Projects.Select(m => m.Id).ToList().Count //Gets user total project
+                    };
+
+                    portfolioResponses.Add(portfolioResponse);
+                }
+
+                return ApiResponse<List<PortfolioResponse>>.Success("Items retireved successfully", portfolioResponses);
+
+
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return ApiResponse<List<PortfolioResponse>>.Fail("Failed to retrieve items", 500);
