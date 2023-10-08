@@ -23,6 +23,8 @@ namespace Zuri_Portfolio_Explore.Utilities
                     .RuleFor(u => u.ProfilePicture, f => f.Name.FirstName())
                     .RuleFor(u => u.Password, f => f.Name.FirstName())
                     .RuleFor(u => u.RefreshToken, f => f.Name.FirstName())
+                    .RuleFor(u => u.Location, f => f.Address.City())
+                    .RuleFor(u => u.Location, f => f.Address.Country())
                     .RuleFor(u => u.Email, (f, u) => f.Internet.Email(u.FirstName))
                     ;
 
