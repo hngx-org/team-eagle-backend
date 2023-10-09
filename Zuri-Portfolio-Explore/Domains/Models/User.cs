@@ -18,6 +18,14 @@ namespace Zuri_Portfolio_Explore.Domains.Models
         [Required(ErrorMessage = "Location is required")]
         [StringLength(255)]
         public string Location { get; set; }
+        [Required(ErrorMessage = "Track is required")]
+        [StringLength(255)]
+        public string Track { get; set; }
+        [StringLength(255)]
+        public string? Tag { get; set; }
+        [Required(ErrorMessage = "Ranking is required")]
+        [StringLength(255)]
+        public string Ranking { get; set; }
         [Required(ErrorMessage = "First Name is required")]
         [StringLength(255)]
         [Column("first_name")] // Maps to the "first_name" column in the database
