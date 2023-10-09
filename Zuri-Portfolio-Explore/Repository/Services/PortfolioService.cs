@@ -65,72 +65,85 @@ namespace Zuri_Portfolio_Explore.Repository.Services
         }
         public async Task<ApiResponse<List<PortfolioResponse>>> GetByFilterPortfolios(PortfolioFilterDTO portfolioFilterDTO)
         {
-            var query = _context.Users
+            try{
+                var query = _context.Users
                 .Include(x => x.UserRoles)
                 .Include(x => x.SkillDetails)
                 .Include(x => x.Projects)
                 .AsQueryable(); // Start with IQueryable
 
-            if (portfolioFilterDTO.Skill is not null)
-            {
-                var skillLower = portfolioFilterDTO.Skill.Trim().ToLower();
-                query = query.Where(x => x.SkillDetails.Any(s => s.Skills.ToLower() == skillLower));
-            }
-            if (portfolioFilterDTO.Country is not null)
-            {
-                var countryLower = portfolioFilterDTO.Country.Trim().ToLower();
-                query = query.Where(x => x.Country.Trim().ToLower() == countryLower);
-            }
-            if (portfolioFilterDTO.Track is not null)
-            {
-                var trackLower = portfolioFilterDTO.Track.Trim().ToLower();
-                query = query.Where(x => x.Track.ToLower() == trackLower);
-            }
-            if (portfolioFilterDTO.Ranking is not null)
-            {
-                var rankingLower = portfolioFilterDTO.Ranking.Trim().ToLower();
-                query = query.Where(x => x.Ranking.ToLower() == rankingLower);
-            }
-            if (portfolioFilterDTO.Tag is not null)
-            {
-                var tagLower = portfolioFilterDTO.Tag.Trim().ToLower();
-                query = query.Where(x => x.Tag != null && x.Tag.ToLower() == tagLower);
-            }
-            if (portfolioFilterDTO.Location is not null)
-            {
-                var locationLower = portfolioFilterDTO.Location.Trim().ToLower();
-                query = query.Where(x => x.Location.ToLower() == locationLower);
-            }
-            if (portfolioFilterDTO.Provider is not null)
-            {
-                var providerLower = portfolioFilterDTO.Provider.Trim().ToLower();
-                query = query.Where(x => x.Provider.ToLower() == providerLower);
-            }
-            if (portfolioFilterDTO.RoleId is not null)
-            {
-                query = query.Where(x => x.UserRoles != null && x.UserRoles.RoleId == portfolioFilterDTO.RoleId);
-            }
-
-            var portfolioResponses = await query
-                .Select(item => new PortfolioResponse()
+                if (portfolioFilterDTO.Skill is not null)
                 {
-                    ProfileUrl = item.ProfilePicture,
-                    FirstName = item.FirstName,
-                    LastName = item.LastName,
-                    Address = item.Location == string.Empty && item.Country == string.Empty
-                            ? " "
-                            : string.Concat(item.Location, ", ", item.Country),
-                    Provider = item.Provider,
-                    Location = item.Location,
-                    Track = item.Track,
-                    Ranking = item.Ranking,
-                    Tag = item.Tag,
-                    Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
-                    Projects = item.Projects.Select(m => m.Id).ToList().Count //Gets user total project
-                })
-                .ToListAsync(); // Execute the query and retrieve the results
+                    var skillLower = portfolioFilterDTO.Skill.Trim().ToLower();
+                    query = query.Where(x => x.SkillDetails.Any(s => s.Skills.ToLower() == skillLower));
+                }
+                if (portfolioFilterDTO.Country is not null)
+                {
+                    var countryLower = portfolioFilterDTO.Country.Trim().ToLower();
+                    query = query.Where(x => x.Country.Trim().ToLower() == countryLower);
+                }
+                if (portfolioFilterDTO.Track is not null)
+                {
+                    var trackLower = portfolioFilterDTO.Track.Trim().ToLower();
+                    query = query.Where(x => x.Track.ToLower() == trackLower);
+                }
+                if (portfolioFilterDTO.Ranking is not null)
+                {
+                    var rankingLower = portfolioFilterDTO.Ranking.Trim().ToLower();
+                    query = query.Where(x => x.Ranking.ToLower() == rankingLower);
+                }
+                if (portfolioFilterDTO.Tag is not null)
+                {
+                    var tagLower = portfolioFilterDTO.Tag.Trim().ToLower();
+                    query = query.Where(x => x.Tag != null && x.Tag.ToLower() == tagLower);
+                }
+                if (portfolioFilterDTO.Location is not null)
+                {
+                    var locationLower = portfolioFilterDTO.Location.Trim().ToLower();
+                    query = query.Where(x => x.Location.ToLower() == locationLower);
+                }
+                if (portfolioFilterDTO.Provider is not null)
+                {
+                    var providerLower = portfolioFilterDTO.Provider.Trim().ToLower();
+                    query = query.Where(x => x.Provider.ToLower() == providerLower);
+                }
+                if (portfolioFilterDTO.RoleId is not null)
+                {
+                    query = query.Where(x => x.UserRoles != null && x.UserRoles.RoleId == portfolioFilterDTO.RoleId);
+                }
 
-            return ApiResponse<List<PortfolioResponse>>.Success("Items retrieved successfully", portfolioResponses);
+                var portfolioResponses = await query
+                    .Select(item => new PortfolioResponse()
+                    {
+                        ProfileUrl = item.ProfilePicture,
+                        FirstName = item.FirstName,
+                        LastName = item.LastName,
+                        Address = item.Location == string.Empty && item.Country == string.Empty
+                                ? " "
+                                : string.Concat(item.Location, ", ", item.Country),
+                        Provider = item.Provider,
+                        Location = item.Location,
+                        Track = item.Track,
+                        Ranking = item.Ranking,
+                        Tag = item.Tag,
+                        Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
+                        Projects = item.Projects.Select(m => m.Id).ToList().Count //Gets user total project
+                    })
+                    .ToListAsync(); // Execute the query and retrieve the results
+
+                if(portfolioResponses.Count == 0)
+                {
+                    return ApiResponse<List<PortfolioResponse>>.Success("Nothing matched your search", portfolioResponses);
+                }
+
+                return ApiResponse<List<PortfolioResponse>>.Success("Items retrieved successfully", portfolioResponses);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return ApiResponse<List<PortfolioResponse>>.Fail("Failed to retrieve items", 500);
+            }
+            
         }
 
         public async Task<ApiResponse<List<PortfolioResponse>>> GetPortfoliosBySearchTerm(string searchTerm)
