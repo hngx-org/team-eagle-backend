@@ -25,12 +25,12 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 
-using (var scope = app.Services.CreateScope())
-{
-    var dataContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dataContext.Database.Migrate();
-    SeedDB.Initialize(dataContext);
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var dataContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//     dataContext.Database.Migrate();
+//     SeedDB.Initialize(dataContext);
+// }
 
 app.UseHttpsRedirection();
 
