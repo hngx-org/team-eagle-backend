@@ -102,6 +102,35 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 query = query.Where(x => x.UserRoles != null && x.UserRoles.RoleId == portfolioFilterDTO.RoleId);
             }
 
+            if (portfolioFilterDTO.CreatedAtMin != null)
+            {
+                query = query.Where(x => x.CreatedAt >= portfolioFilterDTO.CreatedAtMin);
+            }
+
+            if (portfolioFilterDTO.CreatedAtMax != null)
+            {
+                query = query.Where(x => x.CreatedAt <= portfolioFilterDTO.CreatedAtMax);
+            }
+            int pageSize = portfolioFilterDTO.PageSize ?? 10; // Default page size, you can change it
+            int pageNumber = portfolioFilterDTO.PageNumber ?? 1; // Default page number, you can change it
+            int itemsToSkip = (pageNumber - 1) * pageSize;// Calculate the number of items to skip
+
+            query = query.Skip(itemsToSkip).Take(pageSize);
+            
+            switch (portfolioFilterDTO.SortBy)
+            {
+                case SortBy.Newest:
+                    query = query.OrderByDescending(x => x.CreatedAt);
+                    break;
+                case SortBy.Oldest:
+                    query = query.OrderBy(x => x.CreatedAt);
+                    break;
+                default:
+                    break;
+            }
+
+            // Apply pagination
+
             var portfolioResponses = await query
                 .Select(item => new PortfolioResponse()
                 {
@@ -116,6 +145,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                     Track = item.Track,
                     Ranking = item.Ranking,
                     Tag = item.Tag,
+                    CreatedAt = item.CreatedAt,
                     Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
                     Projects = item.Projects.Select(m => m.Id).ToList().Count //Gets user total project
                 })

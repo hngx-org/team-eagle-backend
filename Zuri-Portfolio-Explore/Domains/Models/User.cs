@@ -5,10 +5,10 @@ namespace Zuri_Portfolio_Explore.Domains.Models
 {
     public class User
     {
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
-
         [Required(ErrorMessage = "Username is required")]
         [StringLength(255)]
         public string Username { get; set; }
