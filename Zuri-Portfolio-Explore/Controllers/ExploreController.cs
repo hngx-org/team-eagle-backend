@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Zuri_Portfolio_Explore.Domains.DTOs.Request;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 
 namespace Zuri_Portfolio_Explore.Controllers
@@ -20,9 +21,20 @@ namespace Zuri_Portfolio_Explore.Controllers
         ///</summary>
         ///<returns> Returns a list of user's Portfolio </returns>
         [HttpGet("GetAllPortfolio")]
-        public async Task<IActionResult> GetAllPortfolio()
+        public async Task<IActionResult> GetAllPortfolio(int page = 1, int itemsPerPage = 12)
         {
-            return Ok(await _portfolioService.GetAllPortfolios());
+            var response = await _portfolioService.GetAllPortfolios();
+
+            if (response.Data == null)
+            {
+                return Ok(response);
+            }
+
+            var portfolioResponse = response.Data
+                .Skip((page - 1) * itemsPerPage)
+                .Take(itemsPerPage);
+
+            return Ok(portfolioResponse);
         }
 
         ///<summary>
@@ -34,6 +46,11 @@ namespace Zuri_Portfolio_Explore.Controllers
         public async Task<IActionResult> GetPortfoliosBySearchTerm(string searchTerm)
         {
             return Ok(await _portfolioService.GetPortfoliosBySearchTerm(searchTerm));
+        }
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetAllPortfolioFilter([FromQuery] PortfolioFilterDTO portfolioFilterDTO)
+        {
+            return Ok(await _portfolioService.GetByFilterPortfolios(portfolioFilterDTO));
         }
     }
 }

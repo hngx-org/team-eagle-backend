@@ -1,10 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using Zuri_Portfolio_Explore.Data;
-using Zuri_Portfolio_Explore.Extensions;
-using Zuri_Portfolio_Explore.Repository.Interfaces;
-using Zuri_Portfolio_Explore.Repository.Services;
-using Zuri_Portfolio_Explore.Utilities;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -22,20 +15,16 @@ builder.Services.AddScoped<IPortfolioService, PortfolioService>();
 
 var app = builder.Build();
 app.ConfigureExceptionHandler();
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 
-using (var scope = app.Services.CreateScope())
-{
-    var dataContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dataContext.Database.Migrate();
-    SeedDB.Initialize(dataContext);
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var dataContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//     dataContext.Database.Migrate();
+//     SeedDB.Initialize(dataContext);
+// }
 
 app.UseHttpsRedirection();
 

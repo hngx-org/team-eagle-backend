@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /Zuri-Portfolio-Explore/appsettings.json
+/Zuri-Portfolio-Explore/appsettings.Development.json

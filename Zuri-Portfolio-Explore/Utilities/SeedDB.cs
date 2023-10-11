@@ -10,7 +10,7 @@ namespace Zuri_Portfolio_Explore.Utilities
         {
             if (!context.Users.Any())
             {
-                   
+
                 var socialfaker = new Faker<SocialMedia>().
                    RuleFor(u => u.Name, f => f.Name.LastName());
 
@@ -24,7 +24,10 @@ namespace Zuri_Portfolio_Explore.Utilities
                     .RuleFor(u => u.Password, f => f.Name.FirstName())
                     .RuleFor(u => u.RefreshToken, f => f.Name.FirstName())
                     .RuleFor(u => u.Location, f => f.Address.City())
-                    .RuleFor(u => u.Location, f => f.Address.Country())
+                    .RuleFor(u => u.Country, f => f.Address.Country())
+                    .RuleFor(u => u.Ranking, f => new List<string> { "Intermediate", "Beginner" }[f.Random.Number(0, 1)])
+                    .RuleFor(u => u.Tag, f => f.Address.Country())
+                    .RuleFor(u => u.Track, f => new List<string> { "BacKend", "FrontEnd", "Mobile" }[f.Random.Number(0, 2)])
                     .RuleFor(u => u.Email, (f, u) => f.Internet.Email(u.FirstName))
                     ;
 
@@ -32,12 +35,12 @@ namespace Zuri_Portfolio_Explore.Utilities
                     .RuleFor(u => u.Name, f => f.Name.LastName())
                     .RuleFor(u => u.Description, f => f.Name.LastName())
                     .RuleFor(u => u.Meta, f => f.Name.LastName());
-              
+
                 var skillfaker = new Faker<SkillsDetail>()
                     .RuleFor(u => u.UserId, f => f.Random.Guid())
                     .RuleFor(u => u.Skills, f => f.Name.FirstName())
                     .RuleFor(u => u.Section, f => sectionfaker.Generate())
-                    .RuleFor(u => u.SectionId, f => f.Random.Number(1,5))
+                    .RuleFor(u => u.SectionId, f => f.Random.Number(1, 5))
                     .RuleFor(u => u.User, f => userfaker.Generate());
 
                 var socialUsersFaker = new Faker<SocialUser>()
