@@ -1,3 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+using Zuri_Portfolio_Explore.Data;
+using Zuri_Portfolio_Explore.Extensions;
+using Zuri_Portfolio_Explore.Repository.Interfaces;
+using Zuri_Portfolio_Explore.Repository.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
