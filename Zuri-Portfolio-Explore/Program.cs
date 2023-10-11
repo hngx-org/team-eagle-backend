@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Zuri_Portfolio_Explore.Data;
+using Zuri_Portfolio_Explore.Extensions;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 using Zuri_Portfolio_Explore.Repository.Services;
-using Zuri_Portfolio_Explore.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +19,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IPortfolioService, PortfolioService>();
 
-var app = builder.Build();
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
+var app = builder.Build();
+var loggerFactory = app.Services.GetService<ILoggerFactory>();
+loggerFactory.AddFile("Log/Logfile.txt");
+
+app.ConfigureExceptionHandler(app.Logger);
 app.UseSwagger();
 app.UseSwaggerUI();
 
