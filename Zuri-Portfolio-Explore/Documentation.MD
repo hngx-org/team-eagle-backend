@@ -80,130 +80,122 @@ This documentation provides information about the Portfolio API and how to use t
 
 <detail>
 
-## Table of Contents
+Certainly, here's an updated version of your API documentation that includes `CreatedAtMin` and `CreatedAtMax` for filtering portfolios within a date range:
 
-- [Endpoint](#endpoint)
-- [HTTP Method](#http-method)
-- [Request](#request)
-- [Response](#response)
-- [Examples](#examples)
+```markdown
+# Portfolio Explorer API Documentation
 
-## Endpoint
+## Overview
 
-- **URL**: `/api/portfolios/filter`
-- **Description**: Get portfolios based on specified filters.
+The Portfolio Explorer API provides endpoints to search and filter portfolios of users.
 
-## HTTP Method
+## Get Filtered Portfolios
 
-- **Method**: GET
+Returns a list of filtered portfolios based on the specified criteria.
 
-## Request
+- **URL**: `/api/explore/filter`
+- **HTTP Method**: `GET`
 
-### Query Parameters
+### Request Parameters
 
-- `Skill` (optional, string): Filter portfolios by skill.
-- `Country` (optional, string): Filter portfolios by country.
-- `Track` (optional, string): Filter portfolios by track.
-- `Ranking` (optional, string): Filter portfolios by ranking.
-- `Tag` (optional, string): Filter portfolios by tag.
-- `Location` (optional, string): Filter portfolios by location.
-- `Provider` (optional, string): Filter portfolios by provider.
-- `RoleId` (optional, int): Filter portfolios by role ID.
+- `Skill` (Optional): Filters portfolios by skill.
+- `Country` (Optional): Filters portfolios by country.
+- `Track` (Optional): Filters portfolios by track.
+- `Ranking` (Optional): Filters portfolios by ranking.
+- `Tag` (Optional): Filters portfolios by tag.
+- `Location` (Optional): Filters portfolios by location.
+- `Provider` (Optional): Filters portfolios by provider.
+- `RoleId` (Optional): Filters portfolios by role ID.
+- `SortBy` (Optional): Sorts portfolios by the creation date (`newest` or `oldest).
 
-## Response
+#### Date Range Parameters (Optional)
 
-### Successful Response
+- `CreatedAtMin` (Optional): Filters portfolios created after or on this date.
+- `CreatedAtMax` (Optional): Filters portfolios created before or on this date.
 
-- **Status Code**: 200 OK
-- **Content-Type**: application/json
+#### Pagination Parameters (Optional)
 
-#### Example Response
+- `PageSize` (Optional): Number of items to return per page (default: 10).
+- `PageNumber` (Optional): Page number to retrieve (default: 1).
+
+### Response
+
+- **Status Code**: `200 OK`
+- **Content Type**: `application/json`
+- **Response Body**: A list of portfolios matching the specified criteria.
 
 ```json
-{
-  "status": "success",
-  "message": "Items retrieved successfully",
-  "data": [
-    {
-    "profileUrl": "Tremayne",
-    "firstName": "Lincoln",
-    "lastName": "Elinore",
-    "address": "Uptonside, Oman",
-    "provider": "Rhett",
-    "location": "Uptonside",
-    "ranking": "Beginner",
-    "track": "Mobile",
-    "tag": "British Indian Ocean Territory (Chagos Archipelago)",
-    "skills": [],
-    "projects": 0
+[
+  {
+    "ProfileUrl": "https://example.com/profile.jpg",
+    "FirstName": "John",
+    "LastName": "Doe",
+    "Address": "New York, USA",
+    "Provider": "XYZ Corp",
+    "Location": "New York",
+    "Track": "Software Development",
+    "Ranking": "Gold",
+    "Tag": "Tech Enthusiast",
+    "CreatedAt": "2023-10-10T12:34:56",
+    "Skills": ["C#", "ASP.NET", "Web Development"],
+    "Projects": 5
   },
-    {
-    "profileUrl": "Tremayne",
-    "firstName": "Lincoln",
-    "lastName": "Elinore",
-    "address": "Uptonside, Oman",
-    "provider": "Rhett",
-    "location": "Uptonside",
-    "ranking": "Beginner",
-    "track": "Mobile",
-    "tag": "British Indian Ocean Territory (Chagos Archipelago)",
-    "skills": [],
-    "projects": 0
-  }
-    // ... other portfolio entries
-  ]
-}
+  // More portfolio entries...
+]
 ```
 
-### Error Response
+### Example
 
-- **Status Code**: 400 Bad Request
-- **Content-Type**: application/json
-
-#### Example Error Response
-
-```json
-{
-  "status": "error",
-  "message": "Invalid input. Please check your parameters.",
-  "data": null
-}
+```http
+GET /api/explore/filter?Skill=Web%20Development&Country=USA&SortBy=newest&PageSize=20&PageNumber=2&CreatedAtMin=2023-09-01&CreatedAtMax=2023-09-30
 ```
 
-## Examples
+This example requests portfolios for users with the skill "Web Development," in the USA, sorted by the newest portfolios, with a page size of 20 items, retrieving the second page of results, and filtering portfolios created between September 1, 2023, and September 30, 2023.
 
-### Request Example
+## Get All Portfolios
 
-- **Endpoint**: `/api/portfolios/filter?Skill=Skill1&Country=USA&RoleId=1`
-- **Description**: Filter portfolios by skill (Skill1), country (USA), and role ID (1).
+Returns a list of all available portfolios.
 
-### Response Example
+- **URL**: `/api/explore/GetAllPortfolio`
+- **HTTP Method**: `GET`
 
-- **Status Code**: 200 OK
-- **Content-Type**: application/json
+### Response
 
-#### Response Body
+- **Status Code**: `200 OK`
+- **Content Type**: `application/json`
+- **Response Body**: A list of all available portfolios.
 
 ```json
-{
-  "status": "success",
-  "message": "Items retrieved successfully",
-  "data": [
-    {
-    "profileUrl": "Tremayne",
-    "firstName": "Lincoln",
-    "lastName": "Elinore",
-    "address": "Uptonside, Oman",
-    "provider": "Rhett",
-    "location": "Uptonside",
-    "ranking": "Beginner",
-    "track": "Mobile",
-    "tag": "British Indian Ocean Territory (Chagos Archipelago)",
-    "skills": [],
-    "projects": 0
-  }
-  ]
-}
+[
+  {
+    "ProfileUrl": "https://example.com/profile.jpg",
+    "FirstName": "Jane",
+    "LastName": "Smith",
+    "Address": "Los Angeles, USA",
+    "Provider": "ABC Corp",
+    "Location": "Los Angeles",
+    "Track": "Data Science",
+    "Ranking": "Silver",
+    "Tag": "Data Analyst",
+    "CreatedAt": "2023-09-20T09:45:00",
+    "Skills": ["Python", "Machine Learning"],
+    "Projects": 3
+  },
+  // More portfolio entries...
+]
+```
+
+### Example
+
+```http
+GET /api/explore/GetAllPortfolio
+```
+
+This example retrieves a list of all available portfolios.
+
+---
+
+This documentation provides information about how to use the Portfolio Explorer API to search, filter, and retrieve portfolios of users. You can customize your queries using various parameters to find the portfolios that meet your specific criteria. Enjoy exploring portfolios!
 ```
 
 </detail>

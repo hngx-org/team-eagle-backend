@@ -11,6 +11,7 @@ namespace Zuri_Portfolio_Explore.Domains.DTOs.Response
         public string Ranking { get; set; }
         public string Track { get; set; }
         public string Tag { get; set; }
+        public DateTime CreatedAt { get; set; }
         public List<string> Skills { get; set; }
         public int Projects { get; set; }
         //TODO:: Some more items to be added pending avaliablity in DB {Address, Role, Badge}
