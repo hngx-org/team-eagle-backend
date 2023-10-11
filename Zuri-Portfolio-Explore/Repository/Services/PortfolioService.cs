@@ -81,7 +81,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 {
                     return ApiResponse<List<PortfolioResponse>>.Success("No items to be retrieved", portfolioResponses);
                 }
-                return ApiResponse<List<PortfolioResponse>>.Success("Items retireved successfully", portfolioResponses);
+                return ApiResponse<List<PortfolioResponse>>.Success("Items retrieved successfully", portfolioResponses);
             }
             catch (Exception ex)
             {

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Zuri_Portfolio_Explore.Data;
+using Zuri_Portfolio_Explore.Extensions;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 using Zuri_Portfolio_Explore.Repository.Services;
 using Zuri_Portfolio_Explore.Utilities;
@@ -20,7 +21,7 @@ options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IPortfolioService, PortfolioService>();
 
 var app = builder.Build();
-
+app.ConfigureExceptionHandler();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
