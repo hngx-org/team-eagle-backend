@@ -19,8 +19,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IPortfolioService, PortfolioService>();
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 var app = builder.Build();
-app.ConfigureExceptionHandler();
+var loggerFactory = app.Services.GetService<ILoggerFactory>();
+loggerFactory.AddFile("Log/Logfile.txt");
+
+app.ConfigureExceptionHandler(app.Logger);
 app.UseSwagger();
 app.UseSwaggerUI();
 
