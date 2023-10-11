@@ -80,10 +80,8 @@ This documentation provides information about the Portfolio API and how to use t
 
 <detail>
 
-Certainly, here's an updated version of your API documentation that includes `CreatedAtMin` and `CreatedAtMax` for filtering portfolios within a date range:
 
-```markdown
-# Portfolio Explorer API Documentation
+# Portfolio Explorer Filter API Documentation
 
 ## Overview
 
@@ -183,19 +181,6 @@ Returns a list of all available portfolios.
   },
   // More portfolio entries...
 ]
-```
-
-### Example
-
-```http
-GET /api/explore/GetAllPortfolio
-```
-
-This example retrieves a list of all available portfolios.
-
----
-
-This documentation provides information about how to use the Portfolio Explorer API to search, filter, and retrieve portfolios of users. You can customize your queries using various parameters to find the portfolios that meet your specific criteria. Enjoy exploring portfolios!
 ```
 
 </detail>
