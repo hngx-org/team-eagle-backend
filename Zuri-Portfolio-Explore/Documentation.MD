@@ -15,7 +15,8 @@ This Endpoint is to fetch all the portfolios on the platform.
   {
   "data": [
     {
-    "profileUrl": "Tremayne",
+    "profilePictureUrl": "path/to/image",
+    "profileUrl": "https://localhost:7101/api/explore/getPortfolio/022aca0d-8d73-4632-91a6-b2f0afaf598a",
     "firstName": "Lincoln",
     "lastName": "Elinore",
     "address": "Uptonside, Oman",
@@ -28,7 +29,8 @@ This Endpoint is to fetch all the portfolios on the platform.
     "projects": 0
   },
   {
-    "profileUrl": "Tremayne",
+    "profilePictureUrl": "path/to/image",
+    "profileUrl": "https://localhost:7101/api/explore/getPortfolio/022aca0d-8d73-4632-91a6-b2f0afaf598a",
     "firstName": "Lincoln",
     "lastName": "Elinore",
     "address": "Uptonside, Oman",
@@ -74,6 +76,7 @@ This Endpoint is to fetch all the portfolios on the platform.
 
 
 </details>
+
 <summary>
 This documentation provides information about the Portfolio API and how to use the `GetAllPortfolioFilter` endpoint.
 </summary>
@@ -184,3 +187,38 @@ Returns a list of all available portfolios.
 ```
 
 </detail>
+
+
+<summary>
+This Endpoint is to fetch all the portfolios on the platform.
+</summary>
+
+<details>
+
+### Get a proffolio by ID
+
+- **GET** : `/api/explore/getPortfolio/022aca0d-8d73-4632-91a6-b2f0afaf598a` returns 
+  ```
+     {
+      "data": {
+        "id": "022aca0d-8d73-4632-91a6-b2f0afaf598a",
+        "profilePictureUrl": null,
+        "profileUrl": "https://localhost:7101/api/explore/getPortfolio/022aca0d-8d73-4632-91a6-b2f0afaf598a",
+        "firstName": "Scotty",
+        "lastName": "Milton",
+        "address": null,
+        "provider": "Tressie",
+        "location": null,
+        "ranking": null,
+        "track": null,
+        "tag": null,
+        "createdAt": "0001-01-01T00:00:00",
+        "skills": [],
+        "projects": 0
+      },
+      "message": "Portfolio Retrieved",
+      "isSuccessful": true,
+      "statusCode": 200
+    }
+  ```
+</details>

@@ -3,15 +3,18 @@ using Zuri_Portfolio_Explore.Data;
 using Zuri_Portfolio_Explore.Domains.DTOs.Request;
 using Zuri_Portfolio_Explore.Domains.DTOs.Response;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
+using Zuri_Portfolio_Explore.Utilities;
 
 namespace Zuri_Portfolio_Explore.Repository.Services
 {
     public class PortfolioService : IPortfolioService
     {
         private readonly AppDbContext _context;
-        public PortfolioService(AppDbContext context)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public PortfolioService(AppDbContext context, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<ApiResponse<List<PortfolioResponse>>> GetAllPortfolios()
@@ -31,7 +34,9 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             {
                 var portfolioResponse = new PortfolioResponse()
                 {
-                    ProfileUrl = item.ProfilePicture,
+                    Id = item.Id.ToString(),
+                    ProfilePictureUrl = item.ProfilePicture,
+                    ProfileUrl = Shared.ProfileUrl(item.Id),
                     FirstName = item.FirstName,
                     LastName = item.LastName,
                     Address = item.Location == string.Empty && item.Country == string.Empty
@@ -134,7 +139,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             var portfolioResponses = await query
                 .Select(item => new PortfolioResponse()
                 {
-                    ProfileUrl = item.ProfilePicture,
+                    ProfilePictureUrl = item.ProfilePicture,
                     FirstName = item.FirstName,
                     LastName = item.LastName,
                     Address = item.Location == string.Empty && item.Country == string.Empty
@@ -185,5 +190,31 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             }
             return ApiResponse<List<PortfolioResponse>>.Success("Items retrieved successfully", portfolioResponses);
         }
-    }
+
+        public async Task<ApiResponse<PortfolioResponse>> GetPortfolioByUserId(Guid userId)
+        {
+            var portfolio = await _context.Users
+                .Include(u => u.SkillDetails)
+                .Include(u => u.Projects)
+                .Include(u => u.UserRoles)
+                .ThenInclude(x => x.Role)
+                .FirstOrDefaultAsync(x => x.Id == userId);
+            if(portfolio == default)
+            {
+                return ApiResponse<PortfolioResponse>.Fail("User not found", 404);
+            }
+                var userPortfolio = new PortfolioResponse()
+                {
+                    Id = portfolio.Id.ToString(),
+                    FirstName = portfolio?.FirstName,
+                    LastName = portfolio?.LastName,
+                    Provider = portfolio?.Provider,
+                    ProfileUrl = Shared.ProfileUrl(portfolio.Id),
+                    Skills = portfolio?.SkillDetails.Select(m => m.Skills).ToList(),
+                    Projects = (int)portfolio?.Projects.Select(m => m.Id).ToList().Count 
+                };
+                return ApiResponse<PortfolioResponse>.Success("Portfolio Retrieved", userPortfolio);
+            }
+        }
+
 }

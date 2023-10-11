@@ -18,7 +18,30 @@ namespace Zuri_Portfolio_Explore.Tests.Controller
         }
 
         [Fact]
-        public async void Explore_GetPortfolios_ReturnOk()
+        public async Task Explore_GetPortfolio_ReturnOk()
+        {
+            var fPortfolioService = A.Fake<IPortfolioService>();
+            var expectedResult = new ApiResponse<PortfolioResponse>()
+            {
+                Data = new PortfolioResponse() { },
+                IsSuccessful = true,
+                Message = "Portfolio Retrieved",
+                StatusCode = 200
+            };
+            var userId = Guid.NewGuid();
+
+            A.CallTo(()=> fPortfolioService.GetPortfolioByUserId(userId)).Returns(Task.FromResult(expectedResult));
+
+            var controller = new ExploreController(fPortfolioService);
+
+            var result = await controller.GetPortfolio(userId);
+            result.Should().NotBeNull().And.BeOfType<OkObjectResult>();
+            var resultObject = result as OkObjectResult;
+            resultObject?.StatusCode.Should().Be(200);
+        }
+
+        [Fact]
+        public async Task Explore_GetPortfolios_ReturnOk()
         {
             //Arrange
             var fPortfolioService = A.Fake<IPortfolioService>();
