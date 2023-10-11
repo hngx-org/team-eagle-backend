@@ -9,5 +9,6 @@ namespace Zuri_Portfolio_Explore.Repository.Interfaces
         Task<ApiResponse<List<PortfolioResponse>>> GetAllPortfolios();
         Task<ApiResponse<List<PortfolioResponse>>> GetByFilterPortfolios(PortfolioFilterDTO portfolioFilterDTO);
         Task<ApiResponse<List<PortfolioResponse>>> GetPortfoliosBySearchTerm(string searchTerm);
+        Task<ApiResponse<PortfolioResponse>> GetPortfolioByUserId(Guid userId);
     }
 }

@@ -52,5 +52,11 @@ namespace Zuri_Portfolio_Explore.Controllers
         {
             return Ok(await _portfolioService.GetByFilterPortfolios(portfolioFilterDTO));
         }
+
+        [HttpGet("getPortfolio/{userId}")]
+        public async Task<IActionResult> GetPortfolio(Guid userId)
+        {
+            return Ok(await _portfolioService.GetPortfolioByUserId(userId));
+        }
     }
 }
