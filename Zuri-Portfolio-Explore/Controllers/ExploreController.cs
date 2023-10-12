@@ -47,9 +47,15 @@ namespace Zuri_Portfolio_Explore.Controllers
         ///<returns> Returns a list of user's Portfolio based on the search term </returns>
         //[EnableCors("AllowAnyOrigin")]
         [HttpGet("search/{searchTerm}")]
-        public async Task<IActionResult> GetPortfoliosBySearchTerm(string searchTerm)
+        public async Task<IActionResult> GetPortfoliosBySearchTerm(string searchTerm, int page = 1)
         {
-            return Ok(await _portfolioService.GetPortfoliosBySearchTerm(searchTerm));
+            const int itemsPerPage = 12;
+            var response = await _portfolioService.GetPortfoliosBySearchTerm(searchTerm);
+
+            var searchResponse = response.Data
+                .Skip((page - 1) * itemsPerPage)
+                .Take(itemsPerPage);
+            return Ok(searchResponse);
         }
         
         //[EnableCors("AllowAnyOrigin")]
