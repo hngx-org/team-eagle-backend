@@ -21,6 +21,20 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IPortfolioService, PortfolioService>();
 
+builder.Services.AddCors(options => 
+    {
+        options.AddPolicy("AllowAnyOrigin", 
+            builder => 
+            {
+                builder
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowAnyOrigin();
+            }   
+    );
+    }
+);
+
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
