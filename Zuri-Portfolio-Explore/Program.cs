@@ -21,19 +21,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 options.UseNpgsql(connectionString));
 builder.Services.AddScoped<IPortfolioService, PortfolioService>();
 
-builder.Services.AddCors(options => 
-    {
-        options.AddPolicy("AllowAnyOrigin", 
-            builder => 
-            {
-                builder
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowAnyOrigin();
-            }   
-    );
-    }
-);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader());
+});
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
@@ -45,7 +39,7 @@ loggerFactory.AddFile("Log/Logfile.txt");
 app.ConfigureExceptionHandler(app.Logger);
 app.UseSwagger();
 app.UseSwaggerUI();
-
+app.UseCors("AllowAll");
 
 // using (var scope = app.Services.CreateScope())
 // {
