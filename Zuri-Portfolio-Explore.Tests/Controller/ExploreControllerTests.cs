@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Zuri_Portfolio_Explore.Controllers;
 using Zuri_Portfolio_Explore.Domains.DTOs.Request;
 using Zuri_Portfolio_Explore.Domains.DTOs.Response;
+using Zuri_Portfolio_Explore.Domains.Filter;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 
 namespace Zuri_Portfolio_Explore.Tests.Controller
@@ -30,7 +31,7 @@ namespace Zuri_Portfolio_Explore.Tests.Controller
             };
             var userId = Guid.NewGuid();
 
-            A.CallTo(()=> fPortfolioService.GetPortfolioByUserId(userId)).Returns(Task.FromResult(expectedResult));
+            A.CallTo(() => fPortfolioService.GetPortfolioByUserId(userId)).Returns(Task.FromResult(expectedResult));
 
             var controller = new ExploreController(fPortfolioService);
 
@@ -47,7 +48,7 @@ namespace Zuri_Portfolio_Explore.Tests.Controller
             var fPortfolioService = A.Fake<IPortfolioService>();
             var expectedResult = A.Fake<List<PortfolioResponse>>();
 
-            A.CallTo(() => fPortfolioService.GetAllPortfolios()).Returns(Task.FromResult(new ApiResponse<List<PortfolioResponse>>
+            A.CallTo(() => fPortfolioService.GetAllPortfolios(new PaginationFilter(0, 10))).Returns(Task.FromResult(new ApiResponse<List<PortfolioResponse>>
             {
                 Data = expectedResult,
                 IsSuccessful = true,
@@ -58,7 +59,7 @@ namespace Zuri_Portfolio_Explore.Tests.Controller
             var controller = new ExploreController(fPortfolioService);
 
             //Act
-            var result = await controller.GetAllPortfolio();
+            var result = await controller.GetAllPortfolio(new PaginationFilter(0, 10));
 
             //Assertions
             result.Should().NotBeNull().And.BeOfType<OkObjectResult>();
@@ -89,7 +90,7 @@ namespace Zuri_Portfolio_Explore.Tests.Controller
                 // Add other filter properties as needed
             };
 
-            A.CallTo(() => fakePortfolioService.GetByFilterPortfolios(fakeFilterDTO)).Returns(Task.FromResult(expectedApiResponse));
+            A.CallTo(() => fakePortfolioService.GetByFilterPortfolios(fakeFilterDTO, new PaginationFilter(0, 10))).Returns(Task.FromResult(expectedApiResponse));
 
             var controller = new ExploreController(fakePortfolioService); // Replace YourController with the actual controller name
 
@@ -119,12 +120,12 @@ namespace Zuri_Portfolio_Explore.Tests.Controller
             };
             var searchTerm = "example";
 
-            A.CallTo(() => fPortfolioService.GetPortfoliosBySearchTerm(searchTerm)).Returns(Task.FromResult(expectedAPIResult));
+            A.CallTo(() => fPortfolioService.GetPortfoliosBySearchTerm(searchTerm, new PaginationFilter(0, 10))).Returns(Task.FromResult(expectedAPIResult));
 
             var controller = new ExploreController(fPortfolioService);
 
             //Act
-            var result = await controller.GetPortfoliosBySearchTerm(searchTerm);
+            var result = await controller.GetPortfoliosBySearchTerm(searchTerm, new PaginationFilter(0, 10));
 
             //Assert
             result.Should().NotBeNull().And.BeOfType<OkObjectResult>();
@@ -142,7 +143,7 @@ namespace Zuri_Portfolio_Explore.Tests.Controller
             var fPortfolioService = A.Fake<IPortfolioService>();
             var fPortfolios = A.Fake<List<PortfolioResponse>>();
 
-            A.CallTo(() => fPortfolioService.GetPortfoliosBySearchTerm(searchTerm)).Returns(Task.FromResult(new ApiResponse<List<PortfolioResponse>>
+            A.CallTo(() => fPortfolioService.GetPortfoliosBySearchTerm(searchTerm, new PaginationFilter(0, 10))).Returns(Task.FromResult(new ApiResponse<List<PortfolioResponse>>
             {
                 Data = fPortfolios,
                 IsSuccessful = true,
@@ -153,7 +154,7 @@ namespace Zuri_Portfolio_Explore.Tests.Controller
             var controller = new ExploreController(fPortfolioService);
 
             //Act
-            var result = await controller.GetPortfoliosBySearchTerm(searchTerm);
+            var result = await controller.GetPortfoliosBySearchTerm(searchTerm, new PaginationFilter(0, 10));
 
             //Assertions
             result.Should().NotBeNull().And.BeOfType<OkObjectResult>();
