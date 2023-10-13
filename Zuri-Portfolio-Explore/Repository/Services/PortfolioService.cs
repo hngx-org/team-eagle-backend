@@ -2,6 +2,7 @@
 using Zuri_Portfolio_Explore.Data;
 using Zuri_Portfolio_Explore.Domains.DTOs.Request;
 using Zuri_Portfolio_Explore.Domains.DTOs.Response;
+using Zuri_Portfolio_Explore.Domains.Models;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 using Zuri_Portfolio_Explore.Utilities;
 
@@ -17,52 +18,29 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
+        private async Task<ApiResponse<List<User>>> GetUserPortfolios()
+        {
+			var users = await _context.Users.Include(u => u.SkillDetails).Include(u => u.Projects).ToListAsync();
+            if (!users.Any())
+                return ApiResponse<List<User>>.Success("No items to be retrieved", users);
+            return ApiResponse<List<User>>.Success("Success", users);
+		}
+
         public async Task<ApiResponse<List<PortfolioResponse>>> GetAllPortfolios()
         {
             List<PortfolioResponse> portfolioResponses = new();
-
-
-            // Retrieve user items from DB
-            var users = await _context.Users.Include(u => u.SkillDetails).Include(u => u.Projects).ToListAsync();
-
-            if (users.Count() == 0)
+            var users = await GetUserPortfolios();
+            foreach (var item in users.Data)
             {
-                return ApiResponse<List<PortfolioResponse>>.Success("No items to be retrieved", portfolioResponses);
+                var portfolioResponse = MapToResponse(item);
+				portfolioResponses.Add(portfolioResponse);
             }
-
-            foreach (var item in users)
-            {
-                var portfolioResponse = new PortfolioResponse()
-                {
-                    Id = item.Id.ToString(),
-                    ProfilePictureUrl = item.ProfilePicture,
-                    ProfileUrl = Shared.ProfileUrl(item.Id),
-                    FirstName = item.FirstName,
-                    LastName = item.LastName,
-                    Address = item.Location == string.Empty && item.Country == string.Empty
-                        ? " "
-                        : string.Concat(item.Location, ", ", item.Country),
-                    Provider = item.Provider,
-                    Location = item.Location,
-                    Track = item.Track,
-                    Ranking = item.Ranking,
-                    Tag = item.Tag,
-                    Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
-                    Projects = item.Projects.Select(m => m.Id).ToList().Count //Gets user total project
-                };
-
-                portfolioResponses.Add(portfolioResponse);
-            }
-
-            return ApiResponse<List<PortfolioResponse>>.Success("Items retireved successfully", portfolioResponses);
-
-
+            return ApiResponse<List<PortfolioResponse>>.Success("Items retrieved successfully", portfolioResponses);
         }
         public async Task<ApiResponse<List<PortfolioResponse>>> GetByFilterPortfolios(PortfolioFilterDTO portfolioFilterDTO)
         {
-
             var query = _context.Users
-            .Include(x => x.UserRoles)
+           // .Include(x => x.UserRoles)
             .Include(x => x.SkillDetails)
             .Include(x => x.Projects)
             .AsQueryable(); // Start with IQueryable
@@ -77,21 +55,21 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 var countryLower = portfolioFilterDTO.Country.Trim().ToLower();
                 query = query.Where(x => x.Country.Trim().ToLower() == countryLower);
             }
-            if (portfolioFilterDTO.Track is not null)
-            {
-                var trackLower = portfolioFilterDTO.Track.Trim().ToLower();
-                query = query.Where(x => x.Track.ToLower() == trackLower);
-            }
-            if (portfolioFilterDTO.Ranking is not null)
-            {
-                var rankingLower = portfolioFilterDTO.Ranking.Trim().ToLower();
-                query = query.Where(x => x.Ranking.ToLower() == rankingLower);
-            }
-            if (portfolioFilterDTO.Tag is not null)
-            {
-                var tagLower = portfolioFilterDTO.Tag.Trim().ToLower();
-                query = query.Where(x => x.Tag != null && x.Tag.ToLower() == tagLower);
-            }
+            //if (portfolioFilterDTO.Track is not null)
+            //{
+            //    var trackLower = portfolioFilterDTO.Track.Trim().ToLower();
+            //    query = query.Where(x => x.Track.ToLower() == trackLower);
+            //}
+            //if (portfolioFilterDTO.Ranking is not null)
+            //{
+            //    var rankingLower = portfolioFilterDTO.Ranking.Trim().ToLower();
+            //    query = query.Where(x => x.Ranking.ToLower() == rankingLower);
+            //}
+            //if (portfolioFilterDTO.Tag is not null)
+            //{
+            //    var tagLower = portfolioFilterDTO.Tag.Trim().ToLower();
+            //    query = query.Where(x => x.Tag != null && x.Tag.ToLower() == tagLower);
+            //}
             if (portfolioFilterDTO.Location is not null)
             {
                 var locationLower = portfolioFilterDTO.Location.Trim().ToLower();
@@ -133,34 +111,14 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 default:
                     break;
             }
-
             // Apply pagination
-
             var portfolioResponses = await query
-                .Select(item => new PortfolioResponse()
-                {
-                    ProfilePictureUrl = item.ProfilePicture,
-                    FirstName = item.FirstName,
-                    LastName = item.LastName,
-                    Address = item.Location == string.Empty && item.Country == string.Empty
-                            ? " "
-                            : string.Concat(item.Location, ", ", item.Country),
-                    Provider = item.Provider,
-                    Location = item.Location,
-                    Track = item.Track,
-                    Ranking = item.Ranking,
-                    Tag = item.Tag,
-                    CreatedAt = item.CreatedAt,
-                    Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
-                    Projects = item.Projects.Select(m => m.Id).ToList().Count //Gets user total project
-                })
-                .ToListAsync(); // Execute the query and retrieve the results
-
+                .Select(item => MapToResponse(item))
+                .ToListAsync(); 
             if (portfolioResponses.Count == 0)
             {
                 return ApiResponse<List<PortfolioResponse>>.Success("Nothing matched your search", portfolioResponses);
             }
-
             return ApiResponse<List<PortfolioResponse>>.Success("Items retrieved successfully", portfolioResponses);
         }
         public async Task<ApiResponse<List<PortfolioResponse>>> GetPortfoliosBySearchTerm(string searchTerm)
@@ -170,20 +128,12 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             var portfolioResponses = await _context.Users
                 .Include(u => u.SkillDetails)
                 .Include(u => u.Projects)
-                .Include(u => u.UserRoles)
-                .ThenInclude(x => x.Role)
+                //.Include(u => u.UserRoles)
+                //.ThenInclude(x => x.Role)
                 .Where(x => x.FirstName.ToLower().Contains(searchTerm) || x.LastName.ToLower().Contains(searchTerm)
                 || x.Username.ToLower().Contains(searchTerm) || x.UserRoles.Role.Name.ToLower().Contains(searchTerm))
-                .Select(x => new PortfolioResponse()
-                {
-                    FirstName = x.FirstName,
-                    LastName = x.LastName,
-                    Provider = x.Provider,
-                    Skills = x.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
-                    Projects = x.Projects.Select(m => m.Id).ToList().Count //Gets user total project
-                })
+                .Select(x => MapToResponse(x))
                 .ToListAsync();
-
             if (portfolioResponses.Count == 0)
             {
                 return ApiResponse<List<PortfolioResponse>>.Success("No items to be retrieved", portfolioResponses);
@@ -196,25 +146,38 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             var portfolio = await _context.Users
                 .Include(u => u.SkillDetails)
                 .Include(u => u.Projects)
-                .Include(u => u.UserRoles)
-                .ThenInclude(x => x.Role)
+               // .Include(u => u.UserRoles)
+               // .ThenInclude(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Id == userId);
             if(portfolio == default)
-            {
                 return ApiResponse<PortfolioResponse>.Fail("User not found", 404);
-            }
-                var userPortfolio = new PortfolioResponse()
-                {
-                    Id = portfolio.Id.ToString(),
-                    FirstName = portfolio?.FirstName,
-                    LastName = portfolio?.LastName,
-                    Provider = portfolio?.Provider,
-                    ProfileUrl = Shared.ProfileUrl(portfolio.Id),
-                    Skills = portfolio?.SkillDetails.Select(m => m.Skills).ToList(),
-                    Projects = (int)portfolio?.Projects.Select(m => m.Id).ToList().Count 
-                };
+            var userPortfolio = MapToResponse(portfolio);
                 return ApiResponse<PortfolioResponse>.Success("Portfolio Retrieved", userPortfolio);
             }
-        }
+
+		private static PortfolioResponse MapToResponse(User item)
+		{
+			return new PortfolioResponse
+			{
+				Id = item.Id.ToString(),
+				ProfilePictureUrl = item.ProfilePicture,
+				ProfileUrl = Shared.ProfileUrl(item.Id),
+				FirstName = item.FirstName,
+				LastName = item.LastName,
+				Address = item.Location == string.Empty && item.Country == string.Empty
+							? " "
+							: string.Concat(item.Location, ", ", item.Country),
+				Provider = item.Provider,
+				Location = item.Location,
+				//Track = item.Track,
+				//Ranking = item.Ranking,
+				//Tag = item.Tag,
+				// Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
+				//Projects = item.Projects.Select(m => m.Id).ToList().Count //Gets user total project
+			};
+		}
+	}
+
+    
 
 }

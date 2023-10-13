@@ -9,6 +9,8 @@ namespace Zuri_Portfolio_Explore.Data
         {
 
         }
+
+
         public DbSet<Project> Projects { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Section> Sections { get; set; }
@@ -16,5 +18,17 @@ namespace Zuri_Portfolio_Explore.Data
         public DbSet<SocialMedia> SocialMedias { get; set; }
         public DbSet<SocialUser> SocialUsers { get; set; }
         public DbSet<UserRoles> UserRoles { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<User>().ToTable("user"); 
+            modelBuilder.Entity<User>().HasKey(u => u.Id);
+
+
+            modelBuilder.Entity<SkillsDetail>().ToTable("skills_detail");
+            modelBuilder.Entity<Project>().ToTable("project");
+        }
     }
 }

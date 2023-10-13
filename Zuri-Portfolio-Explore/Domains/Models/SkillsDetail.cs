@@ -7,6 +7,7 @@ namespace Zuri_Portfolio_Explore.Domains.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("id")]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Skills is required")]
