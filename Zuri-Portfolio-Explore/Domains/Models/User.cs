@@ -53,6 +53,6 @@ namespace Zuri_Portfolio_Explore.Domains.Models
 
         public List<SkillsDetail> SkillDetails { get; set; }
         public List<Project> Projects { get; set; }
-        public UserRoles UserRoles { get; set; }
+        //public UserRoles UserRoles { get; set; }
     }
 }

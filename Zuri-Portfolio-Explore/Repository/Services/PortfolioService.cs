@@ -80,10 +80,10 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 var providerLower = portfolioFilterDTO.Provider.Trim().ToLower();
                 query = query.Where(x => x.Provider.ToLower() == providerLower);
             }
-            if (portfolioFilterDTO.RoleId is not null)
-            {
-                query = query.Where(x => x.UserRoles != null && x.UserRoles.RoleId == portfolioFilterDTO.RoleId);
-            }
+            //if (portfolioFilterDTO.RoleId is not null)
+            //{
+            //    query = query.Where(x => x.UserRoles != null && x.UserRoles.RoleId == portfolioFilterDTO.RoleId);
+            //}
 
             if (portfolioFilterDTO.CreatedAtMin != null)
             {
@@ -131,10 +131,10 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 //.Include(u => u.UserRoles)
                 //.ThenInclude(x => x.Role)
                 .Where(x => x.FirstName.ToLower().Contains(searchTerm) || x.LastName.ToLower().Contains(searchTerm)
-                || x.Username.ToLower().Contains(searchTerm) || x.UserRoles.Role.Name.ToLower().Contains(searchTerm))
+                || x.Username.ToLower().Contains(searchTerm))
                 .Select(x => MapToResponse(x))
                 .ToListAsync();
-            if (portfolioResponses.Count == 0)
+            if (portfolioResponses.Count() == 0)
             {
                 return ApiResponse<List<PortfolioResponse>>.Success("No items to be retrieved", portfolioResponses);
             }
