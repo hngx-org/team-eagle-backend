@@ -2,6 +2,7 @@
 using Zuri_Portfolio_Explore.Data;
 using Zuri_Portfolio_Explore.Domains.DTOs.Request;
 using Zuri_Portfolio_Explore.Domains.DTOs.Response;
+using Zuri_Portfolio_Explore.Domains.Filter;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 using Zuri_Portfolio_Explore.Utilities;
 
@@ -11,20 +12,27 @@ namespace Zuri_Portfolio_Explore.Repository.Services
     {
         private readonly AppDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public PortfolioService(AppDbContext context, IHttpContextAccessor httpContextAccessor)
+        private readonly IUriService _uriService;
+        public PortfolioService(AppDbContext context, IHttpContextAccessor httpContextAccessor, IUriService uriService)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
+            _uriService = uriService;
         }
 
-        public async Task<ApiResponse<List<PortfolioResponse>>> GetAllPortfolios()
+        public async Task<ApiResponse<List<PortfolioResponse>>> GetAllPortfolios(PaginationFilter validFilter)
         {
             List<PortfolioResponse> portfolioResponses = new();
-
+            var route = _httpContextAccessor.HttpContext.Request.Path.Value;
 
             // Retrieve user items from DB
-            var users = await _context.Users.Include(u => u.SkillDetails).Include(u => u.Projects).ToListAsync();
+            var usersQuery = _context.Users.Include(u => u.SkillDetails).Include(u => u.Projects);
 
+            var users = await usersQuery
+                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                 .Take(validFilter.PageSize)
+                .ToListAsync();
+            var usersCount = usersQuery.Count();
             if (users.Count() == 0)
             {
                 return ApiResponse<List<PortfolioResponse>>.Success("No items to be retrieved", portfolioResponses);
@@ -54,12 +62,13 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 portfolioResponses.Add(portfolioResponse);
             }
 
-            return ApiResponse<List<PortfolioResponse>>.Success("Items retireved successfully", portfolioResponses);
+            return PaginationHelper.CreatePagedReponse(portfolioResponses, validFilter, usersCount, _uriService, route, "Items retrieved successfully");
 
 
         }
-        public async Task<ApiResponse<List<PortfolioResponse>>> GetByFilterPortfolios(PortfolioFilterDTO portfolioFilterDTO)
+        public async Task<ApiResponse<List<PortfolioResponse>>> GetByFilterPortfolios(PortfolioFilterDTO portfolioFilterDTO, PaginationFilter validFilter)
         {
+            var route = _httpContextAccessor.HttpContext.Request.Path.Value;
 
             var query = _context.Users
             .Include(x => x.UserRoles)
@@ -116,12 +125,12 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             {
                 query = query.Where(x => x.CreatedAt <= portfolioFilterDTO.CreatedAtMax);
             }
-            int pageSize = portfolioFilterDTO.PageSize ?? 10; // Default page size, you can change it
-            int pageNumber = portfolioFilterDTO.PageNumber ?? 1; // Default page number, you can change it
-            int itemsToSkip = (pageNumber - 1) * pageSize;// Calculate the number of items to skip
+            //int pageSize = portfolioFilterDTO.PageSize ?? 10; // Default page size, you can change it
+            //int pageNumber = portfolioFilterDTO.PageNumber ?? 1; // Default page number, you can change it
+            //int itemsToSkip = (pageNumber - 1) * pageSize;// Calculate the number of items to skip
 
-            query = query.Skip(itemsToSkip).Take(pageSize);
-            
+            //query = query.Skip(itemsToSkip).Take(pageSize);
+
             switch (portfolioFilterDTO.SortBy)
             {
                 case SortBy.Newest:
@@ -135,6 +144,10 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             }
 
             // Apply pagination
+            var queryCount = await query.CountAsync();
+            query = query
+                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                 .Take(validFilter.PageSize);
 
             var portfolioResponses = await query
                 .Select(item => new PortfolioResponse()
@@ -161,13 +174,14 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 return ApiResponse<List<PortfolioResponse>>.Success("Nothing matched your search", portfolioResponses);
             }
 
-            return ApiResponse<List<PortfolioResponse>>.Success("Items retrieved successfully", portfolioResponses);
+            return PaginationHelper.CreatePagedReponse(portfolioResponses, validFilter, queryCount, _uriService, route, "Items retrieved successfully");
         }
-        public async Task<ApiResponse<List<PortfolioResponse>>> GetPortfoliosBySearchTerm(string searchTerm)
+        public async Task<ApiResponse<List<PortfolioResponse>>> GetPortfoliosBySearchTerm(string searchTerm, PaginationFilter validFilter)
         {
+            var route = _httpContextAccessor.HttpContext.Request.Path.Value;
             // Retrieve user items from DB
             searchTerm = searchTerm.ToLower();
-            var portfolioResponses = await _context.Users
+            var portfolioResponseQuery = _context.Users
                 .Include(u => u.SkillDetails)
                 .Include(u => u.Projects)
                 .Include(u => u.UserRoles)
@@ -181,14 +195,17 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                     Provider = x.Provider,
                     Skills = x.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
                     Projects = x.Projects.Select(m => m.Id).ToList().Count //Gets user total project
-                })
+                });
+            var portfolioResponses = await portfolioResponseQuery
+                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                 .Take(validFilter.PageSize)
                 .ToListAsync();
-
+            var portfolioCount = await portfolioResponseQuery.CountAsync();
             if (portfolioResponses.Count == 0)
             {
                 return ApiResponse<List<PortfolioResponse>>.Success("No items to be retrieved", portfolioResponses);
             }
-            return ApiResponse<List<PortfolioResponse>>.Success("Items retrieved successfully", portfolioResponses);
+            return PaginationHelper.CreatePagedReponse(portfolioResponses, validFilter, portfolioCount, _uriService, route, "Items retrieved successfully");
         }
 
         public async Task<ApiResponse<PortfolioResponse>> GetPortfolioByUserId(Guid userId)
@@ -199,22 +216,22 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 .Include(u => u.UserRoles)
                 .ThenInclude(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Id == userId);
-            if(portfolio == default)
+            if (portfolio == default)
             {
                 return ApiResponse<PortfolioResponse>.Fail("User not found", 404);
             }
-                var userPortfolio = new PortfolioResponse()
-                {
-                    Id = portfolio.Id.ToString(),
-                    FirstName = portfolio?.FirstName,
-                    LastName = portfolio?.LastName,
-                    Provider = portfolio?.Provider,
-                    ProfileUrl = Shared.ProfileUrl(portfolio.Id),
-                    Skills = portfolio?.SkillDetails.Select(m => m.Skills).ToList(),
-                    Projects = (int)portfolio?.Projects.Select(m => m.Id).ToList().Count 
-                };
-                return ApiResponse<PortfolioResponse>.Success("Portfolio Retrieved", userPortfolio);
-            }
+            var userPortfolio = new PortfolioResponse()
+            {
+                Id = portfolio.Id.ToString(),
+                FirstName = portfolio?.FirstName,
+                LastName = portfolio?.LastName,
+                Provider = portfolio?.Provider,
+                ProfileUrl = Shared.ProfileUrl(portfolio.Id),
+                Skills = portfolio?.SkillDetails.Select(m => m.Skills).ToList(),
+                Projects = (int)portfolio?.Projects.Select(m => m.Id).ToList().Count
+            };
+            return ApiResponse<PortfolioResponse>.Success("Portfolio Retrieved", userPortfolio);
         }
+    }
 
 }
