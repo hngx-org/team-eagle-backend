@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Zuri_Portfolio_Explore.Domains.DTOs.Request;
+using Zuri_Portfolio_Explore.Domains.DTOs.Response;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 
 namespace Zuri_Portfolio_Explore.Controllers
@@ -15,6 +16,16 @@ namespace Zuri_Portfolio_Explore.Controllers
         public ExploreController(IPortfolioService portfolioService)
         {
             _portfolioService = portfolioService;
+        }
+
+        private static IEnumerable<PortfolioResponse> PaginateItemResponse(ApiResponse<List<PortfolioResponse>> items, int page, int itemsPerPage)
+        {
+            var paginatedItems = items.Data
+                .Skip((page - 1) * itemsPerPage)
+                .Take(itemsPerPage);
+
+
+            return paginatedItems;         
         }
 
         ///<summary>
@@ -33,11 +44,7 @@ namespace Zuri_Portfolio_Explore.Controllers
                 return Ok(response);
             }
 
-            var portfolioResponse = response.Data
-                .Skip((page - 1) * itemsPerPage)
-                .Take(itemsPerPage);
-
-            return Ok(portfolioResponse);
+            return Ok(PaginateItemResponse(response, page, itemsPerPage));
         }
 
         ///<summary>
@@ -52,17 +59,27 @@ namespace Zuri_Portfolio_Explore.Controllers
             const int itemsPerPage = 12;
             var response = await _portfolioService.GetPortfoliosBySearchTerm(searchTerm);
 
-            var searchResponse = response.Data
-                .Skip((page - 1) * itemsPerPage)
-                .Take(itemsPerPage);
-            return Ok(searchResponse);
+            if(response.Data == null)
+            {
+                return Ok(response);
+            }
+
+            return Ok(PaginateItemResponse(response, page, itemsPerPage));
         }
         
         //[EnableCors("AllowAnyOrigin")]
         [HttpGet("filter")]
-        public async Task<IActionResult> GetAllPortfolioFilter([FromQuery] PortfolioFilterDTO portfolioFilterDTO)
+        public async Task<IActionResult> GetAllPortfolioFilter([FromQuery] PortfolioFilterDTO portfolioFilterDTO, int page = 1)
         {
-            return Ok(await _portfolioService.GetByFilterPortfolios(portfolioFilterDTO));
+            const int itemsPerPage = 12;
+            var response = await _portfolioService.GetByFilterPortfolios(portfolioFilterDTO);
+
+            if (response.Data == null)
+            {
+                return Ok(response);
+            }
+
+            return Ok(PaginateItemResponse(response, page, itemsPerPage));
         }
 
         [HttpGet("getPortfolio/{userId}")]
