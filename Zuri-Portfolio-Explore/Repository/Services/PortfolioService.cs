@@ -3,6 +3,7 @@ using Zuri_Portfolio_Explore.Data;
 using Zuri_Portfolio_Explore.Domains.DTOs.Request;
 using Zuri_Portfolio_Explore.Domains.DTOs.Response;
 using Zuri_Portfolio_Explore.Domains.Filter;
+using Zuri_Portfolio_Explore.Domains.Models;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 using Zuri_Portfolio_Explore.Utilities;
 
@@ -40,26 +41,8 @@ namespace Zuri_Portfolio_Explore.Repository.Services
 
             foreach (var item in users)
             {
-                var portfolioResponse = new PortfolioResponse()
-                {
-                    Id = item.Id.ToString(),
-                    ProfilePictureUrl = item.ProfilePicture,
-                    ProfileUrl = Shared.ProfileUrl(item.Id),
-                    FirstName = item.FirstName,
-                    LastName = item.LastName,
-                    Address = item.Location == string.Empty && item.Country == string.Empty
-                        ? " "
-                        : string.Concat(item.Location, ", ", item.Country),
-                    Provider = item.Provider,
-                    Location = item.Location,
-                    Track = item.Track,
-                    Ranking = item.Ranking,
-                    Tag = item.Tag,
-                    Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
-                    Projects = item.Projects.Select(m => m.Id).ToList().Count //Gets user total project
-                };
-
-                portfolioResponses.Add(portfolioResponse);
+                var portfolioResponse = MapResponse(item);
+				portfolioResponses.Add(portfolioResponse);
             }
 
             return PaginationHelper.CreatePagedReponse(portfolioResponses, validFilter, usersCount, _uriService, route, "Items retrieved successfully");
@@ -150,23 +133,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                  .Take(validFilter.PageSize);
 
             var portfolioResponses = await query
-                .Select(item => new PortfolioResponse()
-                {
-                    ProfilePictureUrl = item.ProfilePicture,
-                    FirstName = item.FirstName,
-                    LastName = item.LastName,
-                    Address = item.Location == string.Empty && item.Country == string.Empty
-                            ? " "
-                            : string.Concat(item.Location, ", ", item.Country),
-                    Provider = item.Provider,
-                    Location = item.Location,
-                    Track = item.Track,
-                    Ranking = item.Ranking,
-                    Tag = item.Tag,
-                    CreatedAt = item.CreatedAt,
-                    Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
-                    Projects = item.Projects.Select(m => m.Id).ToList().Count //Gets user total project
-                })
+                .Select(item => MapResponse(item))
                 .ToListAsync(); // Execute the query and retrieve the results
 
             if (portfolioResponses.Count == 0)
@@ -188,14 +155,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 .ThenInclude(x => x.Role)
                 .Where(x => x.FirstName.ToLower().Contains(searchTerm) || x.LastName.ToLower().Contains(searchTerm)
                 || x.Username.ToLower().Contains(searchTerm) || x.UserRoles.Role.Name.ToLower().Contains(searchTerm))
-                .Select(x => new PortfolioResponse()
-                {
-                    FirstName = x.FirstName,
-                    LastName = x.LastName,
-                    Provider = x.Provider,
-                    Skills = x.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
-                    Projects = x.Projects.Select(m => m.Id).ToList().Count //Gets user total project
-                });
+                .Select(x => MapResponse(x));
             var portfolioResponses = await portfolioResponseQuery
                 .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                  .Take(validFilter.PageSize)
@@ -220,18 +180,32 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             {
                 return ApiResponse<PortfolioResponse>.Fail("User not found", 404);
             }
-            var userPortfolio = new PortfolioResponse()
-            {
-                Id = portfolio.Id.ToString(),
-                FirstName = portfolio?.FirstName,
-                LastName = portfolio?.LastName,
-                Provider = portfolio?.Provider,
-                ProfileUrl = Shared.ProfileUrl(portfolio.Id),
-                Skills = portfolio?.SkillDetails.Select(m => m.Skills).ToList(),
-                Projects = (int)portfolio?.Projects.Select(m => m.Id).ToList().Count
-            };
+            var userPortfolio = MapResponse(portfolio);
             return ApiResponse<PortfolioResponse>.Success("Portfolio Retrieved", userPortfolio);
         }
+
+        private static PortfolioResponse MapResponse (User item)
+        {
+            return new PortfolioResponse()
+			{
+				Id = item.Id.ToString(),
+				ProfilePictureUrl = item.ProfilePicture,
+				ProfileUrl = Shared.ProfileUrl(item.Id),
+				FirstName = item.FirstName,
+				LastName = item.LastName,
+				Address = item.Location == string.Empty && item.Country == string.Empty
+						? " "
+						: string.Concat(item.Location, ", ", item.Country),
+				Provider = item.Provider,
+				Location = item.Location,
+				Track = item.Track,
+				Ranking = item.Ranking,
+				Tag = item.Tag,
+				Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
+				Projects = item.Projects.Select(m => m.Id).ToList().Count, //Gets user total project
+        		CreatedAt = item.CreatedAt,
+			};
+		}
     }
 
 }
