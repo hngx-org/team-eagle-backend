@@ -4,7 +4,6 @@ using Zuri_Portfolio_Explore.Domains.DTOs.Request;
 using Zuri_Portfolio_Explore.Domains.DTOs.Response;
 using Zuri_Portfolio_Explore.Domains.Filter;
 using Zuri_Portfolio_Explore.Domains.Models;
-using Zuri_Portfolio_Explore.Domains.Models;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 using Zuri_Portfolio_Explore.Utilities;
 
@@ -28,7 +27,8 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             var route = _httpContextAccessor.HttpContext.Request.Path.Value;
 
             // Retrieve user items from DB
-            var usersQuery = _context.Users.Include(u => u.SkillDetails).Include(u => u.Projects);
+            var usersQuery = _context.Users.Include(u => u.SkillDetails).Include(u => u.Projects).Include(u => u.UserTrack)
+				.ThenInclude(u => u.Track);
 
             var users = await usersQuery
                 .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
@@ -42,7 +42,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
 
             foreach (var item in users)
             {
-                var portfolioResponse = MapResponse(item);
+                var portfolioResponse = MapToResponse(item);
 				portfolioResponses.Add(portfolioResponse);
             }
 
@@ -58,7 +58,9 @@ namespace Zuri_Portfolio_Explore.Repository.Services
            // .Include(x => x.UserRoles)
             .Include(x => x.SkillDetails)
             .Include(x => x.Projects)
-            .AsQueryable(); // Start with IQueryable
+			.Include(u => u.UserTrack)
+				.ThenInclude(u => u.Track)
+			.AsQueryable(); // Start with IQueryable
 
             if (portfolioFilterDTO.Skill is not null)
             {
@@ -133,10 +135,10 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                  .Take(validFilter.PageSize);
 
             var portfolioResponses = await query
-                .Select(item => MapResponse(item))
+                .Select(item => MapToResponse(item))
                 .ToListAsync(); // Execute the query and retrieve the results
 
-            if (portfolioResponses.Count == 0)
+            if (!portfolioResponses.Any())
             {
                 return ApiResponse<List<PortfolioResponse>>.Success("Nothing matched your search", portfolioResponses);
             }
@@ -151,17 +153,19 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             var portfolioResponseQuery = _context.Users
                 .Include(u => u.SkillDetails)
                 .Include(u => u.Projects)
-                //.Include(u => u.UserRoles)
-                //.ThenInclude(x => x.Role)
-                .Where(x => x.FirstName.ToLower().Contains(searchTerm) || x.LastName.ToLower().Contains(searchTerm)
-                || x.Username.ToLower().Contains(searchTerm) || x.UserRoles.Role.Name.ToLower().Contains(searchTerm))
-                .Select(x => MapResponse(x));
+				.Include(u => u.UserTrack)
+				.ThenInclude(u => u.Track)
+				//.Include(u => u.UserRoles)
+				//.ThenInclude(x => x.Role)
+				.Where(x => x.FirstName.ToLower().Contains(searchTerm) || x.LastName.ToLower().Contains(searchTerm)
+                || x.Username.ToLower().Contains(searchTerm))
+                .Select(x => MapToResponse(x));
             var portfolioResponses = await portfolioResponseQuery
                 .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                  .Take(validFilter.PageSize)
                 .ToListAsync();
             var portfolioCount = await portfolioResponseQuery.CountAsync();
-            if (portfolioResponses.Count == 0)
+            if (!portfolioResponses.Any())
             {
                 return ApiResponse<List<PortfolioResponse>>.Success("No items to be retrieved", portfolioResponses);
             }
@@ -173,20 +177,17 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             var portfolio = await _context.Users
                 .Include(u => u.SkillDetails)
                 .Include(u => u.Projects)
-               // .Include(u => u.UserRoles)
+                .Include(u => u.UserTrack)
+                .ThenInclude(u =>u.Track)
                // .ThenInclude(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Id == userId);
             if (portfolio == default)
-            {
                 return ApiResponse<PortfolioResponse>.Fail("User not found", 404);
             var userPortfolio = MapToResponse(portfolio);
                 return ApiResponse<PortfolioResponse>.Success("Portfolio Retrieved", userPortfolio);
-            }
-            var userPortfolio = MapResponse(portfolio);
-            return ApiResponse<PortfolioResponse>.Success("Portfolio Retrieved", userPortfolio);
         }
 
-        private static PortfolioResponse MapResponse (User item)
+        private static PortfolioResponse MapToResponse(User item)
         {
             return new PortfolioResponse()
 			{
@@ -200,16 +201,13 @@ namespace Zuri_Portfolio_Explore.Repository.Services
 						: string.Concat(item.Location, ", ", item.Country),
 				Provider = item.Provider,
 				Location = item.Location,
-				Track = item.Track,
-				Ranking = item.Ranking,
-				Tag = item.Tag,
+				Track = item.UserTrack?.Track?.track,
+				//Ranking = item.Ranking,
+				//Tag = item.Tag,
 				Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
 				Projects = item.Projects.Select(m => m.Id).ToList().Count, //Gets user total project
         		CreatedAt = item.CreatedAt,
 			};
 		}
     }
-
-    
-
 }

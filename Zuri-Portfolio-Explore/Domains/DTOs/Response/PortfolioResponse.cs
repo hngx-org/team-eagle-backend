@@ -9,6 +9,7 @@ namespace Zuri_Portfolio_Explore.Domains.DTOs.Response
         public string? LastName { get; set; }
         public string? Address { get; set; }
         public string? Provider { get; set; }
+        public string? Track { get; set; }
         public string? Location { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<string> Skills { get; set; }

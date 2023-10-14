@@ -52,6 +52,7 @@ namespace Zuri_Portfolio_Explore.Domains.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public List<SkillsDetail> SkillDetails { get; set; }
+        public UserTrack UserTrack { get; set; }
         public List<Project> Projects { get; set; }
         //public UserRoles UserRoles { get; set; }
     }
