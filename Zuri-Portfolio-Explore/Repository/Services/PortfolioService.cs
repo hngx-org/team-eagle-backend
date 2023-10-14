@@ -2,6 +2,8 @@
 using Zuri_Portfolio_Explore.Data;
 using Zuri_Portfolio_Explore.Domains.DTOs.Request;
 using Zuri_Portfolio_Explore.Domains.DTOs.Response;
+using Zuri_Portfolio_Explore.Domains.Filter;
+using Zuri_Portfolio_Explore.Domains.Models;
 using Zuri_Portfolio_Explore.Domains.Models;
 using Zuri_Portfolio_Explore.Repository.Interfaces;
 using Zuri_Portfolio_Explore.Utilities;
@@ -12,33 +14,46 @@ namespace Zuri_Portfolio_Explore.Repository.Services
     {
         private readonly AppDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public PortfolioService(AppDbContext context, IHttpContextAccessor httpContextAccessor)
+        private readonly IUriService _uriService;
+        public PortfolioService(AppDbContext context, IHttpContextAccessor httpContextAccessor, IUriService uriService)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
+            _uriService = uriService;
         }
 
-        private async Task<ApiResponse<List<User>>> GetUserPortfolios()
-        {
-			var users = await _context.Users.Include(u => u.SkillDetails).Include(u => u.Projects).ToListAsync();
-            if (!users.Any())
-                return ApiResponse<List<User>>.Success("No items to be retrieved", users);
-            return ApiResponse<List<User>>.Success("Success", users);
-		}
-
-        public async Task<ApiResponse<List<PortfolioResponse>>> GetAllPortfolios()
+        public async Task<ApiResponse<List<PortfolioResponse>>> GetAllPortfolios(PaginationFilter validFilter)
         {
             List<PortfolioResponse> portfolioResponses = new();
-            var users = await GetUserPortfolios();
-            foreach (var item in users.Data)
+            var route = _httpContextAccessor.HttpContext.Request.Path.Value;
+
+            // Retrieve user items from DB
+            var usersQuery = _context.Users.Include(u => u.SkillDetails).Include(u => u.Projects);
+
+            var users = await usersQuery
+                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                 .Take(validFilter.PageSize)
+                .ToListAsync();
+            var usersCount = usersQuery.Count();
+            if (users.Count() == 0)
             {
-                var portfolioResponse = MapToResponse(item);
+                return ApiResponse<List<PortfolioResponse>>.Success("No items to be retrieved", portfolioResponses);
+            }
+
+            foreach (var item in users)
+            {
+                var portfolioResponse = MapResponse(item);
 				portfolioResponses.Add(portfolioResponse);
             }
-            return ApiResponse<List<PortfolioResponse>>.Success("Items retrieved successfully", portfolioResponses);
+
+            return PaginationHelper.CreatePagedReponse(portfolioResponses, validFilter, usersCount, _uriService, route, "Items retrieved successfully");
+
+
         }
-        public async Task<ApiResponse<List<PortfolioResponse>>> GetByFilterPortfolios(PortfolioFilterDTO portfolioFilterDTO)
+        public async Task<ApiResponse<List<PortfolioResponse>>> GetByFilterPortfolios(PortfolioFilterDTO portfolioFilterDTO, PaginationFilter validFilter)
         {
+            var route = _httpContextAccessor.HttpContext.Request.Path.Value;
+
             var query = _context.Users
            // .Include(x => x.UserRoles)
             .Include(x => x.SkillDetails)
@@ -94,12 +109,12 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             {
                 query = query.Where(x => x.CreatedAt <= portfolioFilterDTO.CreatedAtMax);
             }
-            int pageSize = portfolioFilterDTO.PageSize ?? 10; // Default page size, you can change it
-            int pageNumber = portfolioFilterDTO.PageNumber ?? 1; // Default page number, you can change it
-            int itemsToSkip = (pageNumber - 1) * pageSize;// Calculate the number of items to skip
+            //int pageSize = portfolioFilterDTO.PageSize ?? 10; // Default page size, you can change it
+            //int pageNumber = portfolioFilterDTO.PageNumber ?? 1; // Default page number, you can change it
+            //int itemsToSkip = (pageNumber - 1) * pageSize;// Calculate the number of items to skip
 
-            query = query.Skip(itemsToSkip).Take(pageSize);
-            
+            //query = query.Skip(itemsToSkip).Take(pageSize);
+
             switch (portfolioFilterDTO.SortBy)
             {
                 case SortBy.Newest:
@@ -112,33 +127,45 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                     break;
             }
             // Apply pagination
+            var queryCount = await query.CountAsync();
+            query = query
+                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                 .Take(validFilter.PageSize);
+
             var portfolioResponses = await query
-                .Select(item => MapToResponse(item))
-                .ToListAsync(); 
+                .Select(item => MapResponse(item))
+                .ToListAsync(); // Execute the query and retrieve the results
+
             if (portfolioResponses.Count == 0)
             {
                 return ApiResponse<List<PortfolioResponse>>.Success("Nothing matched your search", portfolioResponses);
             }
-            return ApiResponse<List<PortfolioResponse>>.Success("Items retrieved successfully", portfolioResponses);
+
+            return PaginationHelper.CreatePagedReponse(portfolioResponses, validFilter, queryCount, _uriService, route, "Items retrieved successfully");
         }
-        public async Task<ApiResponse<List<PortfolioResponse>>> GetPortfoliosBySearchTerm(string searchTerm)
+        public async Task<ApiResponse<List<PortfolioResponse>>> GetPortfoliosBySearchTerm(string searchTerm, PaginationFilter validFilter)
         {
+            var route = _httpContextAccessor.HttpContext.Request.Path.Value;
             // Retrieve user items from DB
             searchTerm = searchTerm.ToLower();
-            var portfolioResponses = await _context.Users
+            var portfolioResponseQuery = _context.Users
                 .Include(u => u.SkillDetails)
                 .Include(u => u.Projects)
                 //.Include(u => u.UserRoles)
                 //.ThenInclude(x => x.Role)
                 .Where(x => x.FirstName.ToLower().Contains(searchTerm) || x.LastName.ToLower().Contains(searchTerm)
-                || x.Username.ToLower().Contains(searchTerm))
-                .Select(x => MapToResponse(x))
+                || x.Username.ToLower().Contains(searchTerm) || x.UserRoles.Role.Name.ToLower().Contains(searchTerm))
+                .Select(x => MapResponse(x));
+            var portfolioResponses = await portfolioResponseQuery
+                .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
+                 .Take(validFilter.PageSize)
                 .ToListAsync();
-            if (portfolioResponses.Count() == 0)
+            var portfolioCount = await portfolioResponseQuery.CountAsync();
+            if (portfolioResponses.Count == 0)
             {
                 return ApiResponse<List<PortfolioResponse>>.Success("No items to be retrieved", portfolioResponses);
             }
-            return ApiResponse<List<PortfolioResponse>>.Success("Items retrieved successfully", portfolioResponses);
+            return PaginationHelper.CreatePagedReponse(portfolioResponses, validFilter, portfolioCount, _uriService, route, "Items retrieved successfully");
         }
 
         public async Task<ApiResponse<PortfolioResponse>> GetPortfolioByUserId(Guid userId)
@@ -149,15 +176,19 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                // .Include(u => u.UserRoles)
                // .ThenInclude(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Id == userId);
-            if(portfolio == default)
+            if (portfolio == default)
+            {
                 return ApiResponse<PortfolioResponse>.Fail("User not found", 404);
             var userPortfolio = MapToResponse(portfolio);
                 return ApiResponse<PortfolioResponse>.Success("Portfolio Retrieved", userPortfolio);
             }
+            var userPortfolio = MapResponse(portfolio);
+            return ApiResponse<PortfolioResponse>.Success("Portfolio Retrieved", userPortfolio);
+        }
 
-		private static PortfolioResponse MapToResponse(User item)
-		{
-			return new PortfolioResponse
+        private static PortfolioResponse MapResponse (User item)
+        {
+            return new PortfolioResponse()
 			{
 				Id = item.Id.ToString(),
 				ProfilePictureUrl = item.ProfilePicture,
@@ -165,18 +196,19 @@ namespace Zuri_Portfolio_Explore.Repository.Services
 				FirstName = item.FirstName,
 				LastName = item.LastName,
 				Address = item.Location == string.Empty && item.Country == string.Empty
-							? " "
-							: string.Concat(item.Location, ", ", item.Country),
+						? " "
+						: string.Concat(item.Location, ", ", item.Country),
 				Provider = item.Provider,
 				Location = item.Location,
-				//Track = item.Track,
-				//Ranking = item.Ranking,
-				//Tag = item.Tag,
-				// Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
-				//Projects = item.Projects.Select(m => m.Id).ToList().Count //Gets user total project
+				Track = item.Track,
+				Ranking = item.Ranking,
+				Tag = item.Tag,
+				Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
+				Projects = item.Projects.Select(m => m.Id).ToList().Count, //Gets user total project
+        		CreatedAt = item.CreatedAt,
 			};
 		}
-	}
+    }
 
     
 

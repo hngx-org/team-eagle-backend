@@ -53,8 +53,14 @@ builder.Services.AddSwaggerGen(options=>
 });
 
 builder.Services.AddHttpContextAccessor();
-
-var connectionString = builder.Configuration.GetConnectionString("RemoteConnection");
+builder.Services.AddSingleton<IUriService>(o =>
+{
+    var accessor = o.GetRequiredService<IHttpContextAccessor>();
+    var request = accessor.HttpContext.Request;
+    var uri = string.Concat(request.Scheme, "://", request.Host.ToUriComponent());
+    return new UriService(uri);
+});
+var connectionString = builder.Configuration.GetConnectionString("DevelopmentConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 options.UseNpgsql(connectionString));
@@ -92,16 +98,12 @@ app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors("AllowAll");
 
-
-//using (var scope = app.Services.CreateScope())
-//{
-//    var dataContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//    //dataContext.Database.EnsureDeleted();
-//    //dataContext.Database.EnsureCreated();
-//    dataContext.Database.Migrate();
-//    SeedDB.Initialize(dataContext);
-//}
-
+// using (var scope = app.Services.CreateScope())
+// {
+//     var dataContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//     dataContext.Database.Migrate();
+//     SeedDB.Initialize(dataContext);
+// }
 
 app.UseHttpsRedirection();
 
