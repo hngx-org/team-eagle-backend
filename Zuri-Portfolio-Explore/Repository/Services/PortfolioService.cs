@@ -72,11 +72,11 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 var countryLower = portfolioFilterDTO.Country.Trim().ToLower();
                 query = query.Where(x => x.Country.Trim().ToLower() == countryLower);
             }
-            //if (portfolioFilterDTO.Track is not null)
-            //{
-            //    var trackLower = portfolioFilterDTO.Track.Trim().ToLower();
-            //    query = query.Where(x => x.Track.ToLower() == trackLower);
-            //}
+            if (portfolioFilterDTO.Track is not null)
+            {
+                var trackLower = portfolioFilterDTO.Track.Trim().ToLower();
+                query = query.Where(x => x.UserTrack.Track.track.ToLower() == trackLower);
+            }
             //if (portfolioFilterDTO.Ranking is not null)
             //{
             //    var rankingLower = portfolioFilterDTO.Ranking.Trim().ToLower();
