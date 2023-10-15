@@ -15,5 +15,6 @@ jobs:
           git remote add upstream https://github.com/hngx-org/team-eagle-zuri-portfolio-explore-backend.git
           git fetch upstream
           git checkout master  # Change 'main' to your default branch name
-          git merge upstream/master --no-edit
+          git merge upstream/master --allow-unrelated-histories
+          git commit -m "Merge upstream changes"
           git push origin master
