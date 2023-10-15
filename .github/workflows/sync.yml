@@ -5,6 +5,7 @@ on:
     - cron: "*/5 * * * *"  # Schedule it daily or adjust the cron expression as needed
   workflow_dispatch:
   repository_dispatch:
+    types: ["hello"]
 
 jobs:
   sync:
