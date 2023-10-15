@@ -12,6 +12,8 @@ jobs:
 
       - name: Sync with Upstream
         run: |
+          git config --global user.email "bolubee95@gmail.com"
+          git config --global user.name "Baroonn"
           git remote add upstream https://github.com/hngx-org/team-eagle-zuri-portfolio-explore-backend.git
           git fetch upstream
           git checkout master  # Change 'main' to your default branch name
