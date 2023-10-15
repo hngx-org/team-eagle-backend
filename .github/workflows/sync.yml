@@ -1,0 +1,19 @@
+name: Sync Fork with Upstream
+on:
+  schedule:
+    - cron: "* * * * *"  # Schedule it daily or adjust the cron expression as needed
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Sync with Upstream
+        run: |
+          git remote add upstream https://github.com/hngx-org/team-eagle-zuri-portfolio-explore-backend.git
+          git fetch upstream
+          git checkout master  # Change 'main' to your default branch name
+          git merge upstream/master --no-edit
+          git push origin master
