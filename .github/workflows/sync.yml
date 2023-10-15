@@ -20,5 +20,4 @@ jobs:
           git fetch upstream
           git checkout master  # Change 'main' to your default branch name
           git merge upstream/master --allow-unrelated-histories
-          git commit -m "Merge upstream changes"
           git push origin master
