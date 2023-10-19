@@ -1,4 +1,13 @@
-﻿namespace Zuri_Portfolio_Explore.Repository.Services
+﻿using Microsoft.EntityFrameworkCore;
+using Zuri_Portfolio_Explore.Data;
+using Zuri_Portfolio_Explore.Domains.DTOs.Request;
+using Zuri_Portfolio_Explore.Domains.DTOs.Response;
+using Zuri_Portfolio_Explore.Domains.Filter;
+using Zuri_Portfolio_Explore.Domains.Models;
+using Zuri_Portfolio_Explore.Repository.Interfaces;
+using Zuri_Portfolio_Explore.Utilities;
+
+namespace Zuri_Portfolio_Explore.Repository.Services
 {
     public class PortfolioService : IPortfolioService
     {
@@ -158,8 +167,9 @@
                 //.Include(u => u.UserRoles)
                 //.ThenInclude(x => x.Role)
                 .Where(x => x.FirstName.ToLower().Contains(searchTerm) || x.LastName.ToLower().Contains(searchTerm)
-                || x.Username.ToLower().Contains(searchTerm) || x.UserTrack.Any(x => x.Track.track.ToLower().Contains(searchTerm)))
+                || x.Username.ToLower().Contains(searchTerm))
                 .Select(x => MapToResponse(x));
+            //|| x.UserTrack.Any(x => x.Track.track.ToLower().Contains(searchTerm))
             var portfolioResponses = await portfolioResponseQuery
                 .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
                  .Take(validFilter.PageSize)
