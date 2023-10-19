@@ -211,7 +211,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                         : string.Concat(item.Location, ", ", item.Country),
                 Provider = item.Provider,
                 Location = item.Location,
-                Track = item.UserTrack.Select(x => x.Track.track).ToList(),
+                Tracks = item.UserTrack.Select(x => x.Track.track).ToList(),
                 //Ranking = item.Ranking,
                 //Tag = item.Tag,
                 Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
