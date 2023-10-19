@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 using Zuri_Portfolio_Explore.Data;
 using Zuri_Portfolio_Explore.Domains.DTOs.Request;
 using Zuri_Portfolio_Explore.Domains.DTOs.Response;
@@ -29,7 +28,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
 
             // Retrieve user items from DB
             var usersQuery = _context.Users.Include(u => u.SkillDetails).Include(u => u.Projects).Include(u => u.UserTrack)
-				.ThenInclude(u => u.Track);
+                .ThenInclude(u => u.Track);
 
             var users = await usersQuery
                 .Skip((validFilter.PageNumber - 1) * validFilter.PageSize)
@@ -44,7 +43,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             foreach (var item in users)
             {
                 var portfolioResponse = MapToResponse(item);
-				portfolioResponses.Add(portfolioResponse);
+                portfolioResponses.Add(portfolioResponse);
             }
 
             return PaginationHelper.CreatePagedReponse(portfolioResponses, validFilter, usersCount, _uriService, route, "Items retrieved successfully");
@@ -56,12 +55,12 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             var route = _httpContextAccessor.HttpContext.Request.Path.Value;
 
             var query = _context.Users
-           // .Include(x => x.UserRoles)
+            // .Include(x => x.UserRoles)
             .Include(x => x.SkillDetails)
             .Include(x => x.Projects)
-			.Include(u => u.UserTrack)
-				.ThenInclude(u => u.Track)
-			.AsQueryable(); // Start with IQueryable
+            .Include(u => u.UserTrack)
+                .ThenInclude(u => u.Track)
+            .AsQueryable(); // Start with IQueryable
 
             if (portfolioFilterDTO.Skill is not null)
             {
@@ -76,9 +75,9 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             if (portfolioFilterDTO.Track is not null)
             {
                 var trackLower = portfolioFilterDTO.Track.Trim().ToLower();
-                query = query.Where(x => x.UserTrack.Track.track.ToLower() == trackLower);
+                query = query.Where(x => x.UserTrack.Any(x => x.Track.track.ToLower() == trackLower));
             }
-            
+
             //if (portfolioFilterDTO.Ranking is not null)
             //{
             //    var rankingLower = portfolioFilterDTO.Ranking.Trim().ToLower();
@@ -95,13 +94,13 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 if (locations.Length > 1)
                 {
                     var filterlocations = locations.Select(x => x.ToLower()).ToList();
-                    query = query.Where(x=> filterlocations.Contains(x.Location.ToLower()) || filterlocations.Contains(x.Country.ToLower()));   
+                    query = query.Where(x => filterlocations.Contains(x.Location.ToLower()) || filterlocations.Contains(x.Country.ToLower()));
                 }
                 else
                 {
-					query = query.Where(x => x.Location.ToLower() == portfolioFilterDTO.Location.ToLower());
-				}
-			}
+                    query = query.Where(x => x.Location.ToLower() == portfolioFilterDTO.Location.ToLower());
+                }
+            }
             if (portfolioFilterDTO.Provider is not null)
             {
                 var providerLower = portfolioFilterDTO.Provider.Trim().ToLower();
@@ -163,11 +162,11 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             var portfolioResponseQuery = _context.Users
                 .Include(u => u.SkillDetails)
                 .Include(u => u.Projects)
-				.Include(u => u.UserTrack)
-				.ThenInclude(u => u.Track)
-				//.Include(u => u.UserRoles)
-				//.ThenInclude(x => x.Role)
-				.Where(x => x.FirstName.ToLower().Contains(searchTerm) || x.LastName.ToLower().Contains(searchTerm)
+                .Include(u => u.UserTrack)
+                .ThenInclude(u => u.Track)
+                //.Include(u => u.UserRoles)
+                //.ThenInclude(x => x.Role)
+                .Where(x => x.FirstName.ToLower().Contains(searchTerm) || x.LastName.ToLower().Contains(searchTerm)
                 || x.Username.ToLower().Contains(searchTerm))
                 .Select(x => MapToResponse(x));
             var portfolioResponses = await portfolioResponseQuery
@@ -188,37 +187,37 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 .Include(u => u.SkillDetails)
                 .Include(u => u.Projects)
                 .Include(u => u.UserTrack)
-                .ThenInclude(u =>u.Track)
-               // .ThenInclude(x => x.Role)
+                .ThenInclude(u => u.Track)
+                // .ThenInclude(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Id == userId);
             if (portfolio == default)
                 return ApiResponse<PortfolioResponse>.Fail("User not found", 404);
             var userPortfolio = MapToResponse(portfolio);
-                return ApiResponse<PortfolioResponse>.Success("Portfolio Retrieved", userPortfolio);
+            return ApiResponse<PortfolioResponse>.Success("Portfolio Retrieved", userPortfolio);
         }
 
         private static PortfolioResponse MapToResponse(User item)
         {
             return new PortfolioResponse()
-			{
-				Id = item.Id.ToString(),
-				ProfilePictureUrl = item.ProfilePicture,
-				ProfileUrl = Shared.ProfileUrl(item.Id),
-				FirstName = item.FirstName,
-				LastName = item.LastName,
-				Address = item.Location == string.Empty && item.Country == string.Empty
-						? " "
-						: string.Concat(item.Location, ", ", item.Country),
-				Provider = item.Provider,
-				Location = item.Location,
-				Track = item.UserTrack?.Track?.track,
-				//Ranking = item.Ranking,
-				//Tag = item.Tag,
-				Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
-				Projects = item.Projects.Select(m => m.Id).ToList().Count, //Gets user total project
-        		CreatedAt = item.CreatedAt,
+            {
+                Id = item.Id.ToString(),
+                ProfilePictureUrl = item.ProfilePicture,
+                ProfileUrl = Shared.ProfileUrl(item.Id),
+                FirstName = item.FirstName,
+                LastName = item.LastName,
+                Address = item.Location == string.Empty && item.Country == string.Empty
+                        ? " "
+                        : string.Concat(item.Location, ", ", item.Country),
+                Provider = item.Provider,
+                Location = item.Location,
+                Tracks = item.UserTrack.Select(x => x.Track.track).Distinct().ToList(),
+                //Ranking = item.Ranking,
+                //Tag = item.Tag,
+                Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
+                Projects = item.Projects.Select(m => m.Id).ToList().Count, //Gets user total project
+                CreatedAt = item.CreatedAt,
                 Country = item.Country,
-			};
-		}
+            };
+        }
     }
 }
