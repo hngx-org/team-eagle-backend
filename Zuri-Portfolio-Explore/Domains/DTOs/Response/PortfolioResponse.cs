@@ -11,6 +11,7 @@ namespace Zuri_Portfolio_Explore.Domains.DTOs.Response
         public string? Provider { get; set; }
         public List<string> Track { get; set; }
         public string? Location { get; set; }
+        public string? Country { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<string> Skills { get; set; }
         public int Projects { get; set; }

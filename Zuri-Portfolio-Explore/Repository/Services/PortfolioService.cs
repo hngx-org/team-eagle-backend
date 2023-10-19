@@ -1,13 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Zuri_Portfolio_Explore.Data;
-using Zuri_Portfolio_Explore.Domains.DTOs.Request;
-using Zuri_Portfolio_Explore.Domains.DTOs.Response;
-using Zuri_Portfolio_Explore.Domains.Filter;
-using Zuri_Portfolio_Explore.Domains.Models;
-using Zuri_Portfolio_Explore.Repository.Interfaces;
-using Zuri_Portfolio_Explore.Utilities;
-
-namespace Zuri_Portfolio_Explore.Repository.Services
+﻿namespace Zuri_Portfolio_Explore.Repository.Services
 {
     public class PortfolioService : IPortfolioService
     {
@@ -77,6 +68,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 var trackLower = portfolioFilterDTO.Track.Trim().ToLower();
                 query = query.Where(x => x.UserTrack.Any(x => x.Track.track.ToLower() == trackLower));
             }
+
             //if (portfolioFilterDTO.Ranking is not null)
             //{
             //    var rankingLower = portfolioFilterDTO.Ranking.Trim().ToLower();
@@ -89,8 +81,16 @@ namespace Zuri_Portfolio_Explore.Repository.Services
             //}
             if (portfolioFilterDTO.Location is not null)
             {
-                var locationLower = portfolioFilterDTO.Location.Trim().ToLower();
-                query = query.Where(x => x.Location.ToLower() == locationLower);
+                var locations = portfolioFilterDTO.Location.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (locations.Length > 1)
+                {
+                    var filterlocations = locations.Select(x => x.ToLower()).ToList();
+                    query = query.Where(x => filterlocations.Contains(x.Location.ToLower()) || filterlocations.Contains(x.Country.ToLower()));
+                }
+                else
+                {
+                    query = query.Where(x => x.Location.ToLower() == portfolioFilterDTO.Location.ToLower());
+                }
             }
             if (portfolioFilterDTO.Provider is not null)
             {
@@ -207,6 +207,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 Skills = item.SkillDetails.Select(m => m.Skills).ToList(), //Gets user skills
                 Projects = item.Projects.Select(m => m.Id).ToList().Count, //Gets user total project
                 CreatedAt = item.CreatedAt,
+                Country = item.Country
             };
         }
     }
