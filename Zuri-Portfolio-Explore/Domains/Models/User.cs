@@ -12,7 +12,9 @@ namespace Zuri_Portfolio_Explore.Domains.Models
         public Guid Id { get; set; }
         [StringLength(255)]
         [Column("username")]
-        public string Username { get; set; }
+        public string? Username { get; set; }
+        [Column("slug")]
+        public string? Slug { get; set; }
         [Column("country")]
         [StringLength(255)]
         public string? Country { get; set; }
