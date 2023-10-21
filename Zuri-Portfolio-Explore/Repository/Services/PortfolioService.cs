@@ -217,6 +217,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 Projects = item.Projects.Select(m => m.Id).ToList().Count, //Gets user total project
                 CreatedAt = item.CreatedAt,
                 Country = item.Country,
+                UserName = item.Username
             };
         }
     }
