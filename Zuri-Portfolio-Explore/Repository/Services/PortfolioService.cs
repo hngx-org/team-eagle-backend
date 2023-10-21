@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 using Zuri_Portfolio_Explore.Data;
 using Zuri_Portfolio_Explore.Domains.DTOs.Request;
 using Zuri_Portfolio_Explore.Domains.DTOs.Response;
@@ -217,6 +218,7 @@ namespace Zuri_Portfolio_Explore.Repository.Services
                 Projects = item.Projects.Select(m => m.Id).ToList().Count, //Gets user total project
                 CreatedAt = item.CreatedAt,
                 Country = item.Country,
+                Slug = item.Slug,
             };
         }
     }
